@@ -8,7 +8,7 @@ import backgroundVideo from './assets/bg.mp4';
 
 // Global Variables
 const debug = false; // Set to true to use sample data instead of API
-const n = 3; // Number of questions
+const n = 10; // Number of questions
 const rssUrl = "https://www.thestar.com.my/rss/News/"; // RSS feed URL
 
 
