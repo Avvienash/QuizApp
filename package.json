@@ -1,6 +1,6 @@
 {
   "name": "my-quiz-app",
-  "homepage": "https://Avvienash.github.io/QuizApp",
+  "homepage": "https://Avvienash.github.io/QuizApp-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
-  "deploy": "gh-pages -d dist -r https://github.com/Avvienash/QuizApp.git -b gh-pages -a"
+  "deploy": "gh-pages -d dist -r https://github.com/Avvienash/QuizApp-frontend.git -b gh-pages -a"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.12",

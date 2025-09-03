@@ -144,7 +144,7 @@ Generate a production build:
 ```
 npm run build
 ```
-Outputs to `dist/` (Vite default). The `base` path `/QuizApp/` is set in `vite.config.js` for GitHub Pages.
+Outputs to `dist/` (Vite default). The `base` path `/QuizApp-frontend/` is set in `vite.config.js` for GitHub Pages.
 
 Preview the production build locally:
 ```
@@ -203,7 +203,7 @@ Although no automated tests are included, consider adding:
 ### ❗ Troubleshooting
 | Issue | Cause | Fix |
 |-------|-------|-----|
-| Blank screen on GitHub Pages | Wrong `base` path | Ensure `base: '/QuizApp/'` matches repo name |
+| Blank screen on GitHub Pages | Wrong `base` path | Ensure `base: '/QuizApp-frontend/'` matches repo name |
 | 404 on refresh | SPA + static hosting | Enable Pages 404 fallback (add `404.html` copying `index.html`) |
 | CORS / network error | Backend down / blocked | Check console, verify backend URL, implement retry |
 | Styles missing | Tailwind build misconfigured | Reinstall deps, ensure `@tailwindcss/vite` plugin active |
