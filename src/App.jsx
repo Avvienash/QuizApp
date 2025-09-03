@@ -43,9 +43,8 @@ function App() {
     }
   };
 
-  // Load questions on app mount
-  useEffect(() => {
-    // Try to load from cache first
+  // Load quiz function
+  const loadQuiz = () => {
     const cachedQuestions = loadFromCache();
     if (cachedQuestions) {
       setQuestions(cachedQuestions);
@@ -53,7 +52,10 @@ function App() {
     } else {
       generateQuiz();
     }
-  }, []);
+  }
+
+  // Load questions on app mount
+  useEffect(() => {loadQuiz()}, []);
 
   // Handle Start
   const handleStart = () => {
@@ -84,10 +86,7 @@ function App() {
   const handleTryAgain = () => {
     setScore(0);
     setAnswers([]);
-    setQuestionsLoaded(false);
-    setQuestions([]);
-    setScreen('loading');
-    generateQuiz();
+    setScreen('quiz');
   };
 
   // Render different screens based on the current state
