@@ -5,12 +5,12 @@ import QuizScreen from './components/QuizScreen';
 import ResultScreen from './components/ResultScreen';
 import LoadingScreen from './components/LoadingScreen';
 import backgroundVideo from './assets/bg.mp4';
+import { loadFromCache, saveToCache, clearCache} from './utils/cache';
 
 // Global Variables
-const debug = true; // Set to true to use sample data instead of API
-const n = 0; // Number of questions
+const debug = false; // Set to true to use sample data instead of API
+const n = 10; // Number of questions
 const rssUrl = "https://feeds.bbci.co.uk/news/rss.xml?edition=int" // "https://www.thestar.com.my/rss/News/"; // RSS feed URL
-
 
 function App() {
   // State management
@@ -29,9 +29,13 @@ function App() {
       const res = await fetch(fetchUrl);
       const quizData = await res.json();
       console.log("Response received as: ", quizData);
+      
       // Set questions and mark as loaded
       setQuestions(quizData.questions);
       setQuestionsLoaded(true);
+      
+      // Save to cache
+      saveToCache(quizData.questions);
     } catch (err) {
       // Handle any errors that occur during quiz generation
       console.error('Error generating quiz:', err);
@@ -41,7 +45,14 @@ function App() {
 
   // Load questions on app mount
   useEffect(() => {
-    generateQuiz();
+    // Try to load from cache first
+    const cachedQuestions = loadFromCache();
+    if (cachedQuestions) {
+      setQuestions(cachedQuestions);
+      setQuestionsLoaded(true);
+    } else {
+      generateQuiz();
+    }
   }, []);
 
   // Handle Start
