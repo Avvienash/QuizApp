@@ -1,28 +1,36 @@
 /* General Styles */
+@import "tailwindcss";
 
 :root {
   --text-color-primary : #ffffff;
   --font-weight-primary : 700;
+
+  /* Responsive typography with clamp(min, preferred, max) */
+  --fs-title: clamp(1.5rem, 4vw, 2rem);
+  --fs-title-highlight: clamp(2rem, 6vw, 3rem);
+  --fs-question: clamp(1rem, 3.5vw, 1.3rem);
+  --fs-option: clamp(0.9rem, 3vw, 1.1rem);
+  --fs-button: clamp(1rem, 4vw, 1.5rem);
 }
 
 .glass-screen {
+  width: 90%;
   max-width: 800px;
-  min-width: 600px;
-  margin: 2rem auto;
+  margin: 1.5rem auto;
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 20px;
   box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
-  padding: 2rem 2.5rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
 .title {
-  font-size: 2rem;
+  font-size: var(--fs-title);
   color: var(--text-color-primary);
   font-weight: var(--font-weight-primary);
   text-align: center;
@@ -30,7 +38,7 @@
 }
 
 .title-highlight {
-  font-size: 3rem;
+  font-size: var(--fs-title-highlight);
   color: var(--text-color-primary);
   margin: 0;
   font-weight: var(--font-weight-primary);
@@ -38,10 +46,11 @@
 }
 
 .event-btn {
-  width: 500px;
+  width: 100%;
+  max-width: 500px;
   align-self: center;
-  padding: 1rem 2.5rem;
-  font-size: 1.5rem;
+  padding: 0.8rem 1.5rem;
+  font-size: var(--fs-button);
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.2);
@@ -60,23 +69,23 @@
   box-shadow: 0 12px 30px rgba(31, 38, 135, 0.3);
 }
 
-
 /* Quiz Component Styles */
-
 .quiz-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .question-count {
-  font-size: 1.1rem;
+  font-size: clamp(0.9rem, 3vw, 1.1rem);
   color: var(--text-color-primary);
   font-weight: var(--font-weight-primary);
 }
 
 .timer {
-  font-size: 1.1rem;
+  font-size: clamp(0.9rem, 3vw, 1.1rem);
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -96,7 +105,7 @@
 }
 
 .question-text {
-  font-size: 1.3rem;
+  font-size: var(--fs-question);
   color: var(--text-color-primary);
   font-weight: var(--font-weight-primary);
   margin-bottom: 0.5rem;
@@ -109,8 +118,8 @@
 }
 
 .option-btn {
-  padding: 1rem 1.5rem;
-  font-size: 1.1rem;
+  padding: 1rem 1.2rem;
+  font-size: var(--fs-option);
   border-radius: 15px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.1);
@@ -156,12 +165,12 @@
   color: var(--text-color-primary);
 }
 
-/* Loading Screen Specific */
+/* Loading Screen */
 .loader {
   align-self: center;
-  width: 200px;
-  height: 200px;
-  border: 10px solid rgb(255, 255, 255,0.3);
+  width: clamp(100px, 25vw, 200px);
+  height: clamp(100px, 25vw, 200px);
+  border: 10px solid rgba(255, 255, 255,0.3);
   border-left: 10px solid #ffffff;
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -170,4 +179,21 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Mobile-specific tweaks */
+@media (max-width: 480px) {
+  .glass-screen {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .options {
+    gap: 0.7rem;
+  }
+
+  .event-btn {
+    padding: 0.7rem 1rem;
+    border-radius: 15px;
+  }
 }

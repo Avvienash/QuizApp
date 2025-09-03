@@ -1,0 +1,16 @@
+- Calling the API to fetch questions upon app load
+-  Mobile responsive design
+
+
+
+
+
+
+
+
+
+- Make Progress bar instead spinner
+- 
+- Add a Review Questions page
+- Test Images rendering in questions
+- multiple options of news sources for quiz questions

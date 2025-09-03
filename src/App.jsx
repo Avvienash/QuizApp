@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import StartScreen from './components/StartScreen';
 import ErrorScreen from './components/ErrorScreen';
 import QuizScreen from './components/QuizScreen';
@@ -7,8 +7,8 @@ import LoadingScreen from './components/LoadingScreen';
 import backgroundVideo from './assets/bg.mp4';
 
 // Global Variables
-const debug = false; // Set to true to use sample data instead of API
-const n = 10; // Number of questions
+const debug = true; // Set to true to use sample data instead of API
+const n = 0; // Number of questions
 const rssUrl = "https://feeds.bbci.co.uk/news/rss.xml?edition=int" // "https://www.thestar.com.my/rss/News/"; // RSS feed URL
 
 
@@ -18,6 +18,7 @@ function App() {
   const [screen, setScreen] = useState('start'); // start, quiz, loading, result
   const [score, setScore] = useState(0);
   const [answers, setAnswers] = useState([]);
+  const [questionsLoaded, setQuestionsLoaded] = useState(false);
 
   // Generate quiz function
   const generateQuiz = async () => {
@@ -28,9 +29,9 @@ function App() {
       const res = await fetch(fetchUrl);
       const quizData = await res.json();
       console.log("Response received as: ", quizData);
-      // Set questions and navigate to quiz screen
+      // Set questions and mark as loaded
       setQuestions(quizData.questions);
-      setScreen('quiz');
+      setQuestionsLoaded(true);
     } catch (err) {
       // Handle any errors that occur during quiz generation
       console.error('Error generating quiz:', err);
@@ -38,13 +39,28 @@ function App() {
     }
   };
 
+  // Load questions on app mount
+  useEffect(() => {
+    generateQuiz();
+  }, []);
+
   // Handle Start
   const handleStart = () => {
-    setScreen('loading');
     setScore(0);
     setAnswers([]);
-    generateQuiz();
+    if (questionsLoaded) {
+      setScreen('quiz'); // Questions are ready, go straight to quiz
+    } else {
+      setScreen('loading'); // Questions not ready yet, show loading screen
+    }
   };
+
+  // Handle when questions finish loading during loading screen
+  useEffect(() => {
+    if (questionsLoaded && screen === 'loading') {
+      setScreen('quiz');
+    }
+  }, [questionsLoaded, screen]);
 
   // Handle Quiz End
   const handleQuizEnd = (finalScore, userAnswers) => {
@@ -55,10 +71,12 @@ function App() {
 
   // Handle Try Again
   const handleTryAgain = () => {
-    setScreen('loading');
     setScore(0);
     setAnswers([]);
-    setScreen('quiz');
+    setQuestionsLoaded(false);
+    setQuestions([]);
+    setScreen('loading');
+    generateQuiz();
   };
 
   // Render different screens based on the current state

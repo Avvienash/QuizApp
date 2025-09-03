@@ -32,6 +32,7 @@ export default function QuizScreen({ questions, onQuizEnd }) {
 
   // Handle timeout scenario
   const handleTimeout = useCallback(() => {
+    if ("vibrate" in navigator) navigator.vibrate(100); // Vibrate on timeout
     setFeedback("timeout"); // Indicate timeout feedback
     const updatedAnswers = [...userAnswers, null]; // null for unanswered
     setUserAnswers(updatedAnswers); // Record unanswered
