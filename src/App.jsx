@@ -4,6 +4,7 @@ import ErrorScreen from './components/ErrorScreen';
 import QuizScreen from './components/QuizScreen';
 import ResultScreen from './components/ResultScreen';
 import LoadingScreen from './components/LoadingScreen';
+import QuizReviewScreen from './components/QuizReviewScreen';
 import backgroundVideo from './assets/bg.mp4';
 import { loadFromCache, saveToCache, clearCache} from './utils/cache';
 
@@ -80,6 +81,7 @@ function App() {
     setScore(finalScore);
     setAnswers(userAnswers);
     setScreen('result');
+    //setScreen('review');
   };
 
   // Handle Try Again
@@ -106,7 +108,8 @@ function App() {
       {screen === 'loading' && <LoadingScreen /> }
       {screen === 'error' && <ErrorScreen onRetry={handleStart} />}
       {screen === 'quiz' && <QuizScreen questions={questions} onQuizEnd={handleQuizEnd} />}
-      {screen === 'result' && <ResultScreen score={score} total={questions.length} onTryAgain={handleTryAgain} /> }
+      {screen === 'result' && <ResultScreen score={score} total={questions.length} onTryAgain={handleTryAgain} onReview={() => setScreen('review')} /> }
+      {screen === 'review' && <QuizReviewScreen questions={questions} userAnswers={answers} onReturnToResults={() => setScreen('result')} /> }
     </div>
   );
 }
