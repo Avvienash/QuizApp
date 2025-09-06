@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import "./Components.css";
 
-const QUIZ_TIME_LIMIT = 20;
+const QUIZ_TIME_LIMIT = 60;
 const QUIZ_TIME_WARNING_THRESHOLD = 5;
 const QUIZ_FEEDBACK_DISPLAY_TIME = 2; // seconds
 

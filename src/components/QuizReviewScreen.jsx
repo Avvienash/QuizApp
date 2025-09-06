@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./Components.css";
 
 export default function QuizReviewScreen({ questions, userAnswers, onReturnToResults }) {
@@ -21,6 +21,22 @@ export default function QuizReviewScreen({ questions, userAnswers, onReturnToRes
     }
   };
 
+  // Keyboard navigation (arrow keys)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "ArrowRight") {
+        nextQuestion();
+      } else if (e.key === "ArrowLeft") {
+        prevQuestion();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [currentIndex, questions.length]);
+
   // Determine button class based on user answer and correct answer
   const getOptionClass = (opt) => {
     if (opt === currentQuestion.Answer) return "correct";
@@ -35,12 +51,12 @@ export default function QuizReviewScreen({ questions, userAnswers, onReturnToRes
           Reviewing Question {currentIndex + 1} / {questions.length}
         </div>
         <div className="nav-buttons">
-            <button
-                className="nav-btn"
-                onClick={onReturnToResults}
-            >
-                Return to Results
-            </button>
+          <button
+            className="nav-btn"
+            onClick={onReturnToResults}
+          >
+            Return to Results
+          </button>
           <button
             className="nav-btn"
             onClick={prevQuestion}
@@ -85,7 +101,6 @@ export default function QuizReviewScreen({ questions, userAnswers, onReturnToRes
           </a>
         </div>
       )}
-
     </div>
   );
 }
