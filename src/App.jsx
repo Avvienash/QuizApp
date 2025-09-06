@@ -106,17 +106,9 @@ function App() {
         <source src={backgroundVideo} type="video/mp4" />
         Your browser does not support the video tag.
       </video>
-      {screen === 'start' && <StartScreen onStart={handleStart} />}
-      {screen === 'loading' && <LoadingScreen /> }
-      {screen === 'error' && <ErrorScreen onRetry={handleStart} />}
-      {screen === 'quiz' && <QuizScreen questions={questions} onQuizEnd={handleQuizEnd} />}
-      {screen === 'result' && <ResultScreen score={score} total={questions.length} onTryAgain={handleTryAgain} onReview={() => setScreen('review')} /> }
-      {screen === 'review' && <QuizReviewScreen questions={questions} userAnswers={answers} onReturnToResults={() => setScreen('result')} /> }
-
-
       {showWinnerVideo && (
         <video
-          className="fixed inset-0 w-screen h-screen object-cover -z-10 mix-blend-screen"
+          className="fixed inset-0 w-screen h-screen object-cover -z-9 mix-blend-screen"
           muted
           autoPlay
           playsInline
@@ -125,6 +117,14 @@ function App() {
           <source src={winnerVideo} type="video/mp4" />
         </video> 
       )}
+      {screen === 'start' && <StartScreen onStart={handleStart} />}
+      {screen === 'loading' && <LoadingScreen /> }
+      {screen === 'error' && <ErrorScreen onRetry={handleStart} />}
+      {screen === 'quiz' && <QuizScreen questions={questions} onQuizEnd={handleQuizEnd} />}
+      {screen === 'result' && <ResultScreen score={score} total={questions.length} onTryAgain={handleTryAgain} onReview={() => setScreen('review')} /> }
+      {screen === 'review' && <QuizReviewScreen questions={questions} userAnswers={answers} onReturnToResults={() => setScreen('result')} /> }
+
+
     </div>
   );
 }
