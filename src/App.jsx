@@ -83,7 +83,8 @@ function App() {
     setScore(finalScore);
     setAnswers(userAnswers);
     setScreen('result');
-    if (finalScore === questions.length) setShowWinnerVideo(true);
+    //console.log("Final Score:", finalScore, "out of", questions.length);
+    if (finalScore == questions.length) setShowWinnerVideo(true);
   };
 
   // Handle Try Again
