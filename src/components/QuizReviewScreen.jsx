@@ -48,15 +48,15 @@ export default function QuizReviewScreen({ questions, userAnswers, onReturnToRes
     <div className="glass-screen">
       <div className="quiz-header">
         <div className="question-count">
-          Reviewing Question {currentIndex + 1} / {questions.length}
+          Question {currentIndex + 1} / {questions.length}
         </div>
         <div className="nav-buttons">
-          <button
+          {/* <button
             className="nav-btn"
             onClick={onReturnToResults}
           >
             Return to Results
-          </button>
+          </button> */}
           <button
             className="nav-btn"
             onClick={prevQuestion}
@@ -89,18 +89,27 @@ export default function QuizReviewScreen({ questions, userAnswers, onReturnToRes
         ))}
       </div>
 
-      {currentQuestion.Source && (
-        <div className="source-link">
-          <a
-            href={currentQuestion.Source}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="source-link-text"
-          >
-            Read more about this topic
-          </a>
-        </div>
-      )}
+        <div className="quiz-header">
+          <div className="source-link">
+            <a
+              href={currentQuestion.Source}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="source-link-text"
+            >
+              Read more about this topic
+            </a>
+          </div>
+          <div className="nav-buttons">
+              <button
+                className="nav-btn"
+                onClick={onReturnToResults}
+              >
+                Return to Results
+              </button>
+          </div>
+      </div>
+
     </div>
   );
 }

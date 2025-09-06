@@ -82,9 +82,9 @@ function App() {
   const handleQuizEnd = (finalScore, userAnswers) => {
     setScore(finalScore);
     setAnswers(userAnswers);
+    if (finalScore == questions.length) setShowWinnerVideo(true);
     setScreen('result');
     //console.log("Final Score:", finalScore, "out of", questions.length);
-    if (finalScore == questions.length) setShowWinnerVideo(true);
   };
 
   // Handle Try Again
