@@ -6,6 +6,7 @@ import ResultScreen from './components/ResultScreen';
 import LoadingScreen from './components/LoadingScreen';
 import QuizReviewScreen from './components/QuizReviewScreen';
 import backgroundVideo from './assets/bg.mp4';
+import winnerVideo from './assets/winner.mp4';
 import { loadFromCache, saveToCache, clearCache} from './utils/cache';
 
 // Global Variables
@@ -20,6 +21,7 @@ function App() {
   const [score, setScore] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [questionsLoaded, setQuestionsLoaded] = useState(false);
+  const [showWinnerVideo, setShowWinnerVideo] = useState(false);
 
   // Generate quiz function
   const generateQuiz = async () => {
@@ -81,7 +83,7 @@ function App() {
     setScore(finalScore);
     setAnswers(userAnswers);
     setScreen('result');
-    //setScreen('review');
+    if (finalScore === questions.length) setShowWinnerVideo(true);
   };
 
   // Handle Try Again
@@ -110,6 +112,19 @@ function App() {
       {screen === 'quiz' && <QuizScreen questions={questions} onQuizEnd={handleQuizEnd} />}
       {screen === 'result' && <ResultScreen score={score} total={questions.length} onTryAgain={handleTryAgain} onReview={() => setScreen('review')} /> }
       {screen === 'review' && <QuizReviewScreen questions={questions} userAnswers={answers} onReturnToResults={() => setScreen('result')} /> }
+
+
+      {showWinnerVideo && (
+        <video
+          className="fixed inset-0 w-screen h-screen object-cover -z-10 mix-blend-screen"
+          muted
+          autoPlay
+          playsInline
+          onEnded={() => setShowWinnerVideo(false)}
+        >
+          <source src={winnerVideo} type="video/mp4" />
+        </video> 
+      )}
     </div>
   );
 }
