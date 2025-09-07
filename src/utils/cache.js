@@ -1,5 +1,5 @@
 const CACHE_KEY = 'quiz_questions';
-const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
+const CACHE_DURATION = 5 * 60 * 1000; // 30 minutes in milliseconds
 
 // Check if cached data is still valid
 export const isCacheValid = (timestamp) => {
