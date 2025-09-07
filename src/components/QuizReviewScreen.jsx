@@ -97,7 +97,7 @@ export default function QuizReviewScreen({ questions, userAnswers, onReturnToRes
               rel="noopener noreferrer"
               className="source-link-text"
             >
-              Read more about this topic
+              Read more
             </a>
           </div>
           <div className="nav-buttons">
