@@ -1,16 +1,8 @@
-- Calling the API to fetch questions upon app load
--  Mobile responsive design
+-- PWA Investigation
+-- COnversion to APK
+-- Move backend to Nelify
+-- Used Chache data if no internet
+-- Prompt engineering for better questions
 
 
-
-
-
-
-
-
-
-- Make Progress bar instead spinner
-- 
-- Add a Review Questions page
-- Test Images rendering in questions
-- multiple options of news sources for quiz questions
+npx gitignore

@@ -9,11 +9,6 @@ import backgroundVideo from './assets/bg.mp4';
 import winnerVideo from './assets/winner.mp4';
 import { loadFromCache, saveToCache, clearCache} from './utils/cache';
 
-// Global Variables
-const debug = false; // Set to true to use sample data instead of API
-const n = 10; // Number of questions
-//const rssUrl = "https://feeds.bbci.co.uk/news/rss.xml?edition=int" // 
-const rssUrl = "https://www.thestar.com.my/rss/News/"; // RSS feed URL
 
 function App() {
   // State management
@@ -28,7 +23,7 @@ function App() {
   const generateQuiz = async () => {
     try {
       // Generate the quiz data
-      const fetchUrl = `https://quizappbackend-wdy4.onrender.com/quiz?n=${n}&url=${rssUrl}&debug=${debug}`
+      const fetchUrl = "/.netlify/functions/generateQuiz";
       console.log("Fetching quiz from:", fetchUrl);
       const res = await fetch(fetchUrl);
       const quizData = await res.json();
