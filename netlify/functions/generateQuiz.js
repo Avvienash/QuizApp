@@ -51,8 +51,11 @@ Title: ${article.title}
 Description: ${article.description}
 
 GUIDELINES:
-- Keep it safe and appropriate for general audiences.
-- No questions about violence, crime, sexual content, or disturbing topics.
+- The question must be **standalone**: it should make sense without referencing "this article" or requiring the reader to see the article.
+- Make the question **specific and intriguing**, including relevant context such as names, dates, locations, or events.
+- Example: Instead of "What city is referred to in this article?", write "Which city hosted the 2024 FIFA World Cup finals?".
+- Another example: Instead of "Why was the meeting held?", write "Why did the Prime Minister of Malaysia meet the Queen of England on 12th August?".
+- Keep the tone **engaging and curious**, like a good trivia question.
 - Provide 1 correct answer + 3 wrong but plausible answers.
 
 Format as JSON:
