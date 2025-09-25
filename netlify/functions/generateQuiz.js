@@ -112,7 +112,7 @@ Format as JSON:
       Source: article.link
     };
 
-    if (containsInappropriateContent(quizItem)) return null;
+    //if (containsInappropriateContent(quizItem)) return null;
 
     return quizItem;
   } catch (err) {
