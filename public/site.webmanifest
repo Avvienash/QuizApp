@@ -3,7 +3,7 @@
   "short_name": "NewsFlash",
   "description": "NewsFlash Quiz App NewsFlash Quiz is a application that transforms current news headlines into an engaging quiz experience.",
   "theme_color": "#0d1117",
-  "background_color": "#000000ff",
+  "background_color": "#0d1117",
   "display": "standalone",
   "start_url": "https://newsflashquiz.netlify.app/",
   "id": "newsflash-quiz",
@@ -31,26 +31,22 @@
     {
       "src": "/Screenshot_1.png",
       "sizes": "1080x2400",
-      "type": "image/png",
-      "platform": "narrow"
+      "type": "image/png"
     },
     {
       "src": "/Screenshot_2.png",
       "sizes": "1080x2400",
-      "type": "image/png",
-      "platform": "narrow"
+      "type": "image/png"
     },
     {
       "src": "/Screenshot_3.png",
       "sizes": "1080x2400",
-      "type": "image/png",
-      "platform": "narrow"
+      "type": "image/png"
     },
     {
       "src": "/Screenshot_4.png",
       "sizes": "1080x2400",
-      "type": "image/png",
-      "platform": "narrow"
+      "type": "image/png"
     }
   ]
 }
