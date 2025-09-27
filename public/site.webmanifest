@@ -4,7 +4,7 @@
   "description": "NewsFlash Quiz App NewsFlash Quiz is a application that transforms current news headlines into an engaging quiz experience.",
   "theme_color": "#0d1117",
   "background_color": "#0d1117",
-  "display": "standalone",
+  "display": "fullscreen",
   "start_url": "https://newsflashquiz.netlify.app/",
   "id": "newsflash-quiz",
   "dir": "auto",
