@@ -11,7 +11,7 @@ export default defineConfig({
             registerType: "autoUpdate",   
             manifest: {
               name: "NewsFlash Quiz",
-              short_name: "NQ",
+              short_name: "NewsFlash",
               description: "newsflash quiz app",
               theme_color: "#0d1117",
               background_color: "#ffffff",
