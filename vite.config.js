@@ -42,24 +42,28 @@ export default defineConfig({
                           "src": "/Screenshot_1.png",
                           "sizes": "1080x2400",
                           "type": "image/png",
+                          "label": "Review answers",
                           "form_factor": "narrow"
                         },
                         {
                           "src": "/Screenshot_2.png",
                           "sizes": "1080x2400",
                           "type": "image/png",
+                          "label": "Results view",
                           "form_factor": "narrow"
                         },
                         {
                           "src": "/Screenshot_3.png",
                           "sizes": "1080x2400",
                           "type": "image/png",
+                          "label": "Home screen",
                           "form_factor": "narrow"
                         },
                         {
                           "src": "/Screenshot_4.png",
                           "sizes": "1080x2400",
                           "type": "image/png",
+                          "label": "Question view",
                           "form_factor": "narrow"
                         }
                       ]
