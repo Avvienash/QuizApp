@@ -36,40 +36,30 @@ export default defineConfig({
                           "type": "image/png",
                           "purpose": "any"
                         },
-                        {
-                          "src": "/web-app-manifest-maskable-512x512.png",
-                          "sizes": "512x512",
-                          "type": "image/png",
-                          "purpose": "maskable"
-                        }
                       ],
                       "screenshots": [
                         {
                           "src": "/Screenshot_1.png",
                           "sizes": "1080x2400",
                           "type": "image/png",
-                          "label": "Home screen",
                           "form_factor": "narrow"
                         },
                         {
                           "src": "/Screenshot_2.png",
                           "sizes": "1080x2400",
                           "type": "image/png",
-                          "label": "Question view",
                           "form_factor": "narrow"
                         },
                         {
                           "src": "/Screenshot_3.png",
                           "sizes": "1080x2400",
                           "type": "image/png",
-                          "label": "Results screen",
                           "form_factor": "narrow"
                         },
                         {
                           "src": "/Screenshot_4.png",
                           "sizes": "1080x2400",
                           "type": "image/png",
-                          "label": "Categories",
                           "form_factor": "narrow"
                         }
                       ]
