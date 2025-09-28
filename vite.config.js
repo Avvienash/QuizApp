@@ -5,43 +5,16 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), 
-            tailwindcss(),
-            VitePWA({
-            registerType: "autoUpdate",   
-            manifest: {
-              name: "NewsFlash Quiz",
-              short_name: "NewsFlash",
-              description: "NewsFlash Quiz App NewsFlash Quiz is a application that transforms current news headlines into an engaging quiz experience.",
-              theme_color: "#0d1117",
-              background_color: "#000000ff",
-              display: "standalone",
-              start_url: "https://newsflashquiz.netlify.app/",
-              id: "newsflash-quiz",
-              dir: "auto",
-              scope: "https://newsflashquiz.netlify.app/",
-              lang: "en",
-              orientation: "any",
-              prefer_related_applications: true,
-              related_applications: [],
-              categories: ["education", "entertainment"],
-              edge_side_panel: { preferred_width: 400 },
-              
-              icons: [
-                {
-                  src: "/web-app-manifest-192x192.png",
-                  sizes: "192x192",
-                  type: "image/png",
-                },
-                {
-                  src: "/web-app-manifest-512x512.png",
-                  sizes: "512x512",
-                  type: "image/png",
-                },
-              ],
-            },
-          })],
-  base: '/', //'/QuizApp-frontend/',
+  plugins: [
+    react(),
+    tailwindcss(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      manifest: false,                // use external /public/site.webmanifest
+      manifestFilename: 'site.webmanifest'
+    })
+  ],
+  base: '/'
 })
 
 
