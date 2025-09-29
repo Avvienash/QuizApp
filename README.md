@@ -1,238 +1,129 @@
+# NewsFlash Quiz 📰⚡
 
-## The Star Malaysia Latest News Quiz
-
-An interactive quiz web app that generates multiple‑choice questions from the latest Malaysian news articles (RSS feed) and challenges users against a per‑question countdown timer. Built with React + Vite + Tailwind CSS (v4) and deployed to GitHub Pages.
+Transform current news headlines into an engaging quiz experience! NewsFlash Quiz is a Progressive Web App that generates multiple-choice questions from the latest BBC international news and challenges users with timed questions. Built with React + Vite + Tailwind CSS and deployed as a PWA on Netlify.
 
 ---
 
 ### ✨ Key Features
-* Dynamic question generation from an external backend API (RSS → quiz transformation)
-* 10 timed questions (20s each by default) with visual low‑time warning
-* Immediate feedback highlighting correct / incorrect answers
-* Automatic progression (including timeout handling)
-* Animated glass‑morphism UI with looping background video
-* Result summary with score + encouragement message
-* Lightweight, fast dev environment via Vite
-* GitHub Pages one‑command deployment
+* **Dynamic Question Generation**: Real-time quiz creation from BBC International RSS feeds using OpenAI GPT-4
+* **Offline-First Caching**: 30-minute intelligent cache with offline fallback support
+* **Timed Challenges**: 60-second per-question timer with visual warnings and timeout handling
+* **Progressive Web App**: Full PWA support with app manifest, service worker, and offline capabilities
+* **Immersive UI**: Glass-morphism design with background video and winner celebration effects
+* **Question Review**: Post-quiz review mode to explore answers and source articles
+* **Responsive Design**: Mobile-optimized with touch-friendly interactions
+* **Netlify Functions**: Serverless backend for quiz generation
 
 ---
 
 ### 🧰 Tech Stack
-| Layer | Tools |
-|-------|-------|
-| Framework | React 19 + React DOM |
-| Bundler / Dev Server | Vite 7 |
-| Styling | Tailwind CSS v4 + custom CSS (glass effect) |
-| Deployment | GitHub Pages (`gh-pages` npm package) |
-| Linting | ESLint 9 (React hooks + refresh plugins) |
-| Data Source | Backend quiz endpoint wrapping The Star Malaysia RSS feed |
+| Layer | Technology |
+|-------|------------|
+| Frontend | React 19 + React DOM |
+| Build Tool | Vite 7 with PWA plugin |
+| Styling | Tailwind CSS v4 + Custom CSS |
+| Backend | Netlify Functions (Serverless) |
+| AI Integration | OpenAI GPT-4o-mini |
+| Data Source | BBC International RSS Feed |
+| Caching | Browser localStorage with intelligent expiry |
+| Deployment | Netlify with automatic deployments |
+| PWA | Vite PWA plugin with auto-update |
 
 ---
 
 ### 📂 Project Structure
 ```
-my-quiz-app/
-	index.html              # Vite entry HTML
-	vite.config.js          # Vite + Tailwind + base path for GH Pages
-	package.json            # Scripts & dependencies
-	src/
-		main.jsx              # React root render
-		App.jsx               # Screen state controller
-		index.css             # Tailwind import + base styles
-		assets/bg.mp4         # Background looping video
-		components/
-			StartScreen.jsx
-			LoadingScreen.jsx
-			QuizScreen.jsx
-			ResultScreen.jsx
-			ErrorScreen.jsx
-			Components.css      # Glass + quiz styling
-	public/                 # Static assets copied as‑is (logo, etc.)
+NewsFlash-Quiz/
+├── index.html                    # PWA entry point with app metadata
+├── vite.config.js               # Vite + Tailwind + PWA configuration
+├── package.json                 # Dependencies and build scripts
+├── netlify/
+│   └── functions/
+│       └── generateQuiz.js      # Serverless quiz generation function
+├── src/
+│   ├── main.jsx                 # React root with StrictMode
+│   ├── App.jsx                  # Main app state management
+│   ├── index.css                # Tailwind imports + global styles
+│   ├── assets/
+│   │   ├── bg.mp4              # Background loop video
+│   │   └── winner.mp4          # Perfect score celebration
+│   ├── components/
+│   │   ├── StartScreen.jsx      # Welcome screen
+│   │   ├── LoadingScreen.jsx    # Dynamic loading with taglines
+│   │   ├── QuizScreen.jsx       # Main quiz interface
+│   │   ├── ResultScreen.jsx     # Score summary
+│   │   ├── QuizReviewScreen.jsx # Answer review with navigation
+│   │   ├── ErrorScreen.jsx      # Error handling
+│   │   └── Components.css       # Component-specific styling
+│   └── utils/
+│       └── cache.js            # Intelligent caching system
+└── public/                     # PWA assets and static files
+    ├── _redirects             # Netlify SPA routing
+    ├── web-app-manifest-*.png # PWA icons
+    ├── Screenshot_*.png       # App store screenshots
+    └── .well-known/
+        └── assetlinks.json    # Android TWA verification
 ```
 
 ---
 
 ### 🔄 Application Flow
-1. Start Screen → user clicks Start
-2. `generateQuiz()` fetches questions from backend
-3. Loading Screen shown while awaiting response
-4. Quiz Screen cycles through N questions (default 10)
-	 * 20s timer per question
-	 * Auto‑advance on answer or timeout
-5. Result Screen shows final score & try again option
-6. Retry resets state and regenerates quiz
+1. **App Launch**: Loads cached questions or shows loading screen
+2. **Question Generation**: Netlify function fetches BBC RSS → OpenAI processes → Returns structured quiz
+3. **Intelligent Caching**: 30-minute cache with offline fallback support
+4. **Quiz Experience**: 10 questions, 60s each, with immediate feedback
+5. **Results & Review**: Score display with detailed answer review option
+6. **Offline Support**: Cached questions available when network unavailable
 
 ---
 
-### ⏱ Quiz Logic Highlights
-* `QuizScreen` keeps local state: current index, selected option, feedback mode, per‑question timer, score, userAnswers.
-* Timer pauses during feedback to avoid overlap.
-* Timeout recorded as `null` answer and advances after a short delay.
-* Styling classes (`correct`, `incorrect`, `selected`) applied deterministically after user selection or timeout.
+### ⚙️ Serverless Backend (Netlify Functions)
 
----
+The quiz generation happens server-side via [`netlify/functions/generateQuiz.js`](netlify/functions/generateQuiz.js):
 
-### 🌐 Data / Backend Contract
-The frontend calls (example):
-```
-https://quizappbackend-wdy4.onrender.com/quiz?n=10&url=https://www.thestar.com.my/rss/News/&debug=false
-```
-Expected JSON shape (simplified):
-```json
+**Process Flow:**
+1. Fetches BBC International RSS feed
+2. Processes articles through OpenAI GPT-4o-mini
+3. Generates standalone, engaging questions with 4 options each
+4. Returns structured JSON with questions, answers, and source links
+
+**API Contract:**
+```javascript
+// GET /.netlify/functions/generateQuiz
 {
-	"questions": [
-		{
-			"Question": "...",
-			"Option A": "...",
-			"Option B": "...",
-			"Option C": "...",
-			"Option D": "...",
-			"Answer": "A"  // Letter matching the correct option
-		}
-	]
+  "date": "2024-01-15T10:30:00.000Z",
+  "questions": [
+    {
+      "Question": "Which country announced new climate targets for 2030?",
+      "Option A": "United Kingdom",
+      "Option B": "Germany", 
+      "Option C": "France",
+      "Option D": "Italy",
+      "Answer": "A",
+      "Source": "https://bbc.co.uk/news/..."
+    }
+    // ... 9 more questions
+  ]
 }
 ```
-If the request fails or JSON is malformed, the app switches to the Error screen.
 
 ---
 
-### 🚀 Getting Started (Local Development)
-Prerequisites: Node.js 18+ (recommended), npm.
+### 💾 Intelligent Caching System
 
-1. Install dependencies:
+[`src/utils/cache.js`](src/utils/cache.js) implements smart caching:
+
+- **30-minute cache duration** for fresh content
+- **Offline fallback** when network unavailable
+- **Automatic cache invalidation** when expired and online
+- **Error handling** with cache cleanup on corruption
+
+```javascript
+// Cache functions
+loadFromCache()     // Load with validity check
+saveToCache(data)   // Save with timestamp
+isCacheValid(ts)    // Check if within 30min
+hasCachedQuestions() // Quick validity check
+clearCache()        // Manual cache reset
 ```
-npm install
-```
-2. Run the dev server:
-```
-npm run dev
-```
-3. Open the printed local URL (usually `http://localhost:5173`).
-
-Hot reload is enabled by Vite.
-
----
-
-### 🧪 Linting
-Run ESLint:
-```
-npm run lint
-```
-Fix issues manually (no auto‑fix script currently defined).
-
----
-
-### 🛠 Configuration Points
-Location: `src/App.jsx` (top constants)
-* `debug` (boolean) – when supported by backend, may trigger sample/static data
-* `n` (int) – number of quiz questions to request
-* `rssUrl` – source RSS feed URL
-
-To make these runtime configurable (future enhancement), consider environment variables + a settings screen.
-
----
-
-### 🎨 Styling & UI
-* Tailwind v4 imported via `@import "tailwindcss";` in `index.css`.
-* Component‑scoped enhancements live in `Components.css` (glass effect, buttons, timer states, loader spinner, answer state classes).
-* Background video (`bg.mp4`) rendered once in `App.jsx` behind all screens using absolute positioning and layering (`-z-10`).
-
----
-
-### 📦 Build
-Generate a production build:
-```
-npm run build
-```
-Outputs to `dist/` (Vite default). The `base` path `/QuizApp-frontend/` is set in `vite.config.js` for GitHub Pages.
-
-Preview the production build locally:
-```
-npm run preview
-```
-
----
-
-### 🌍 Deployment (GitHub Pages)
-Configured scripts:
-* `predeploy` → runs `npm run build`
-* `deploy` → publishes via `gh-pages` to branch `gh-pages`
-
-Steps:
-```
-npm run deploy
-```
-Ensure the repository has Pages configured to serve from the `gh-pages` branch (root).
-
-If you fork the repo:
-1. Update `homepage` in `package.json` to your GitHub username & repo.
-2. Adjust `base` in `vite.config.js` if repository name changes.
-
----
-
-### 🔐 Environment / Secrets
-Currently no client‑side secrets. If future APIs require keys, use server‑side proxying or build‑time environment variables (never hardcode secrets in the frontend).
-
----
-
-### 🧩 Potential Improvements
-* Show progress bar or overall timer
-* Add categories / difficulty selection
-* Persist high scores (localStorage) and history
-* Accessibility: focus outlines, ARIA live region for feedback
-* Mobile layout tuning (responsive width < 600px)
-* Fetch cancellation & retry logic
-* Skeleton loading vs current spinner
-* Internationalization (i18n)
-* Question review screen after completion
-* Adaptive timing (extend if user is reading long question)
-* Offline fallback / PWA support
-
----
-
-### 🧪 Suggested Test Cases (Not Yet Implemented)
-Although no automated tests are included, consider adding:
-1. Successful quiz fetch populates N questions
-2. Timer reaches zero → records null answer and advances
-3. Correct answer increments score
-4. Quiz end calls `onQuizEnd` with full answer list length N
-5. Error path renders Error screen when fetch rejects
-
----
-
-### ❗ Troubleshooting
-| Issue | Cause | Fix |
-|-------|-------|-----|
-| Blank screen on GitHub Pages | Wrong `base` path | Ensure `base: '/QuizApp-frontend/'` matches repo name |
-| 404 on refresh | SPA + static hosting | Enable Pages 404 fallback (add `404.html` copying `index.html`) |
-| CORS / network error | Backend down / blocked | Check console, verify backend URL, implement retry |
-| Styles missing | Tailwind build misconfigured | Reinstall deps, ensure `@tailwindcss/vite` plugin active |
-
----
-
-### 📄 License
-Add a license (e.g., MIT) if you intend public reuse. (Currently unspecified.)
-
----
-
-### 🙌 Acknowledgements
-* The Star Malaysia RSS feed for content basis
-* Vite & Tailwind teams for fast DX
-
----
-
-### 🤝 Contributing
-1. Fork / branch off `main`
-2. Make changes with clear commit messages
-3. Run build & lint
-4. Open PR describing changes + screenshots if UI related
-
----
-
-### 📬 Contact
-Open an issue in the repository for bugs, ideas, or questions.
-
----
-
-Happy quizzing!
 
