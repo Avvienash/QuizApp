@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.netlify.newsflashquiz.twa",
+        "sha256_cert_fingerprints": ["A9:FF:65:25:5A:2D:39:81:DD:98:56:E4:50:C2:59:C5:03:AA:4F:89:AA:B4:F4:4B:37:BC:C1:32:16:84:35:4D","41:40:97:EA:7B:7C:F2:F3:A2:E8:FA:9F:23:59:55:2D:B4:B8:C5:4F:6F:91:9F:6A:ED:3B:E8:D2:A5:6C:6E:E8"]
+      }
+    }]

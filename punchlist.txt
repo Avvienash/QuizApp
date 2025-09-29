@@ -1,8 +1,6 @@
--- PWA Investigation
--- COnversion to APK
--- Move backend to Nelify
--- Used Chache data if no internet
--- Prompt engineering for better questions
-
-
-npx gitignore
+-- Home Page
+-- Multiple News Sources
+-- User Authentication - Leaderboard / Personal Bests etc
+-- Multiplayer Quiz Mode (low priority)
+-- Move Quiz genratrion to backend - RUn few times a day and store in DB (highest priority)
+-- 
