@@ -80,10 +80,12 @@ function App() {
     setScreen('result');
   };
 
-  const handleTryAgain = () => {
+  // Return to home
+  const handleHome = () => {
     setScore(0);
     setAnswers([]);
-    setScreen('quiz');
+    setShowWinnerVideo(false);
+    setScreen('start');
   };
 
   return (
@@ -115,7 +117,7 @@ function App() {
       {screen === 'loading' && <LoadingScreen />}
       {screen === 'error' && <ErrorScreen onRetry={handleStart} />}
       {screen === 'quiz' && <QuizScreen questions={questions} onQuizEnd={handleQuizEnd} />}
-      {screen === 'result' && <ResultScreen score={score} total={questions.length} onTryAgain={handleTryAgain} onReview={() => setScreen('review')} />}
+      {screen === 'result' && <ResultScreen score={score} total={questions.length} onHome={handleHome} onReview={() => setScreen('review')} />}
       {screen === 'review' && <QuizReviewScreen questions={questions} userAnswers={answers} onReturnToResults={() => setScreen('result')} />}
     </div>
   );

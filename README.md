@@ -1,129 +1,105 @@
 # NewsFlash Quiz 📰⚡
 
-Transform current news headlines into an engaging quiz experience! NewsFlash Quiz is a Progressive Web App that generates multiple-choice questions from the latest BBC international news and challenges users with timed questions. Built with React + Vite + Tailwind CSS and deployed as a PWA on Netlify.
+A Progressive Web App that transforms BBC news headlines into engaging timed quizzes. Built with React + Vite + Tailwind CSS and deployed on Netlify.
 
----
+## Features
 
-### ✨ Key Features
-* **Dynamic Question Generation**: Real-time quiz creation from BBC International RSS feeds using OpenAI GPT-4
-* **Offline-First Caching**: 30-minute intelligent cache with offline fallback support
-* **Timed Challenges**: 60-second per-question timer with visual warnings and timeout handling
-* **Progressive Web App**: Full PWA support with app manifest, service worker, and offline capabilities
-* **Immersive UI**: Glass-morphism design with background video and winner celebration effects
-* **Question Review**: Post-quiz review mode to explore answers and source articles
-* **Responsive Design**: Mobile-optimized with touch-friendly interactions
-* **Netlify Functions**: Serverless backend for quiz generation
+- **Daily Quiz Generation**: Automated quiz creation from BBC RSS feeds using OpenAI GPT-4
+- **Smart Caching**: 1-hour cache with offline fallback support via [`src/utils/cache.js`](src/utils/cache.js)
+- **Timed Questions**: 60-second timer per question with visual feedback
+- **PWA Support**: Full offline functionality with service worker and app manifest
+- **Responsive Design**: Mobile-optimized glass-morphism UI with background video
+- **Answer Review**: Post-quiz review with source article links
 
----
+## Tech Stack
 
-### 🧰 Tech Stack
-| Layer | Technology |
-|-------|------------|
-| Frontend | React 19 + React DOM |
-| Build Tool | Vite 7 with PWA plugin |
-| Styling | Tailwind CSS v4 + Custom CSS |
-| Backend | Netlify Functions (Serverless) |
-| AI Integration | OpenAI GPT-4o-mini |
-| Data Source | BBC International RSS Feed |
-| Caching | Browser localStorage with intelligent expiry |
-| Deployment | Netlify with automatic deployments |
-| PWA | Vite PWA plugin with auto-update |
+- **Frontend**: React 19, Vite 7, Tailwind CSS v4
+- **Backend**: Netlify Functions (Serverless)
+- **AI**: OpenAI GPT-4o for question generation
+- **Data**: BBC International RSS Feed
+- **Caching**: localStorage with intelligent expiry
+- **PWA**: Vite PWA plugin with auto-update
 
----
+## Architecture
 
-### 📂 Project Structure
-```
-NewsFlash-Quiz/
-├── index.html                    # PWA entry point with app metadata
-├── vite.config.js               # Vite + Tailwind + PWA configuration
-├── package.json                 # Dependencies and build scripts
-├── netlify/
-│   └── functions/
-│       └── generateQuiz.js      # Serverless quiz generation function
-├── src/
-│   ├── main.jsx                 # React root with StrictMode
-│   ├── App.jsx                  # Main app state management
-│   ├── index.css                # Tailwind imports + global styles
-│   ├── assets/
-│   │   ├── bg.mp4              # Background loop video
-│   │   └── winner.mp4          # Perfect score celebration
-│   ├── components/
-│   │   ├── StartScreen.jsx      # Welcome screen
-│   │   ├── LoadingScreen.jsx    # Dynamic loading with taglines
-│   │   ├── QuizScreen.jsx       # Main quiz interface
-│   │   ├── ResultScreen.jsx     # Score summary
-│   │   ├── QuizReviewScreen.jsx # Answer review with navigation
-│   │   ├── ErrorScreen.jsx      # Error handling
-│   │   └── Components.css       # Component-specific styling
-│   └── utils/
-│       └── cache.js            # Intelligent caching system
-└── public/                     # PWA assets and static files
-    ├── _redirects             # Netlify SPA routing
-    ├── web-app-manifest-*.png # PWA icons
-    ├── Screenshot_*.png       # App store screenshots
-    └── .well-known/
-        └── assetlinks.json    # Android TWA verification
-```
+### Components
+- [`StartScreen`](src/components/StartScreen.jsx) - Welcome screen
+- [`QuizScreen`](src/components/QuizScreen.jsx) - Main quiz interface with timer
+- [`ResultScreen`](src/components/ResultScreen.jsx) - Score display
+- [`QuizReviewScreen`](src/components/QuizReviewScreen.jsx) - Answer review with navigation
+- [`LoadingScreen`](src/components/LoadingScreen.jsx) - Dynamic loading states
+- [`ErrorScreen`](src/components/ErrorScreen.jsx) - Error handling
 
----
+### Backend Functions
+- [`generateQuiz.js`](netlify/functions/generateQuiz.js) - Fetches RSS, generates questions via OpenAI
+- [`clearQuiz.js`](netlify/functions/clearQuiz.js) - Admin function to clear stored quiz
 
-### 🔄 Application Flow
-1. **App Launch**: Loads cached questions or shows loading screen
-2. **Question Generation**: Netlify function fetches BBC RSS → OpenAI processes → Returns structured quiz
-3. **Intelligent Caching**: 30-minute cache with offline fallback support
-4. **Quiz Experience**: 10 questions, 60s each, with immediate feedback
-5. **Results & Review**: Score display with detailed answer review option
-6. **Offline Support**: Cached questions available when network unavailable
+### Caching System
+[`src/utils/cache.js`](src/utils/cache.js) implements intelligent caching:
+- 1-hour cache duration for fresh content
+- Offline fallback when network unavailable
+- Automatic cache invalidation when expired
 
----
+## Quiz Generation Flow
 
-### ⚙️ Serverless Backend (Netlify Functions)
+1. **Daily Check**: Function checks if today's quiz exists in Netlify Blobs storage
+2. **RSS Fetch**: Retrieves latest BBC International news articles
+3. **AI Processing**: OpenAI generates standalone quiz questions with 4 options each
+4. **Storage**: Quiz saved to Netlify Blobs with date timestamp
+5. **Delivery**: Structured JSON returned to frontend with caching headers
 
-The quiz generation happens server-side via [`netlify/functions/generateQuiz.js`](netlify/functions/generateQuiz.js):
+## API Response Format
 
-**Process Flow:**
-1. Fetches BBC International RSS feed
-2. Processes articles through OpenAI GPT-4o-mini
-3. Generates standalone, engaging questions with 4 options each
-4. Returns structured JSON with questions, answers, and source links
-
-**API Contract:**
-```javascript
-// GET /.netlify/functions/generateQuiz
+```json
 {
-  "date": "2024-01-15T10:30:00.000Z",
+  "date": "2024-01-15",
   "questions": [
     {
-      "Question": "Which country announced new climate targets for 2030?",
-      "Option A": "United Kingdom",
-      "Option B": "Germany", 
-      "Option C": "France",
-      "Option D": "Italy",
-      "Answer": "A",
+      "Question": "What prompted the temporary suspension of flights at Munich Airport?",
+      "Option A": "Technical issues with air traffic control",
+      "Option B": "Suspected drones in the area", 
+      "Option C": "A security threat alert",
+      "Option D": "Severe weather conditions",
+      "Answer": "B",
       "Source": "https://bbc.co.uk/news/..."
     }
-    // ... 9 more questions
   ]
 }
 ```
 
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Deploy to Netlify
+npm run deploy
+```
+
+## Environment Variables
+
+```env
+OPENAI_API_KEY=your_openai_api_key
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+## PWA Configuration
+
+The app is configured as a PWA in [`vite.config.js`](vite.config.js) with:
+- App manifest for installation
+- Service worker for offline functionality
+- App store screenshots for mobile stores
+- Android TWA support via [`assetlinks.json`](public/.well-known/assetlinks.json)
+
 ---
 
-### 💾 Intelligent Caching System
-
-[`src/utils/cache.js`](src/utils/cache.js) implements smart caching:
-
-- **30-minute cache duration** for fresh content
-- **Offline fallback** when network unavailable
-- **Automatic cache invalidation** when expired and online
-- **Error handling** with cache cleanup on corruption
-
-```javascript
-// Cache functions
-loadFromCache()     // Load with validity check
-saveToCache(data)   // Save with timestamp
-isCacheValid(ts)    // Check if within 30min
-hasCachedQuestions() // Quick validity check
-clearCache()        // Manual cache reset
-```
+**Live Demo**: [NewsFlash Quiz](https://newsflashquiz.netlify.app)
 

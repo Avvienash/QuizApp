@@ -1,6 +1,6 @@
 import './Components.css';
 
-export default function ResultScreen({ score, total, onReview,  onTryAgain }) {
+export default function ResultScreen({ score, total, onReview,  onHome }) {
   const percentage = (score / total) * 100;
 
   const message = percentage >= 70 ? "Congratulations! You're a Star! 🌟" : "Better luck next time! 👀";
@@ -12,8 +12,8 @@ export default function ResultScreen({ score, total, onReview,  onTryAgain }) {
       <button className="event-btn" onClick={onReview}>
         Review Answers
       </button>
-      <button className="event-btn" onClick={onTryAgain}>
-        Try Again
+      <button className="event-btn" onClick={onHome}>
+        Home
       </button>
     </div>
   );

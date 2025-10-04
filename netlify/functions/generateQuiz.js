@@ -53,12 +53,12 @@ async function generateQuestionForArticle(article) {
     Description: ${article.description}
 
     GUIDELINES:
-    - The question must be **standalone**: it should make sense without referencing "this article" or requiring the reader to see the article.
-    - Make the question **specific and intriguing**, including relevant context such as names, dates, locations, or events.
-    - Example: Instead of "What city is referred to in this article?", write "Which city hosted the 2024 FIFA World Cup finals?".
-    - Another example: Instead of "Why was the meeting held?", write "Why did the Prime Minister of Malaysia meet the Queen of England on 12th August?".
-    - Keep the tone **engaging and curious**, like a good trivia question.
-    - Provide 1 correct answer + 3 wrong but plausible answers.
+    - The question must be **self-contained** and make full sense without referencing "this article" or "the news".
+    - Avoid **obvious or tautological questions** (e.g., “Where did the Australian Cup take place?” → “Australia”).
+    - Avoid questions where the correct answer is **directly stated in the question itself**.
+    - The question should focus on **a meaningful fact or insight**: a cause, reason, outcome, statistic, quote, or specific detail.
+    - Include **real context** (names, dates, organizations, or events) to make it feel grounded and interesting.
+    - Keep it **clear, concise, and naturally phrased**, like something you'd see in a trivia game or smart news quiz.
 
     Format as JSON:
     {
@@ -72,9 +72,9 @@ async function generateQuestionForArticle(article) {
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.7
+      temperature: 0.6
     });
 
     let content = response.choices[0].message.content.trim();
@@ -202,7 +202,7 @@ export default async function handler(event, context) {
     console.log("🔄 Existing quiz is outdated or doesn't exist, generating new quiz...");
     
     const n = 10;
-    const rssUrl = "https://feeds.bbci.co.uk/news/rss.xml?edition=int";
+    const rssUrl = "https://feeds.bbci.co.uk/news/world/rss.xml";
     const newQuiz = await generateQuizJSON(n, rssUrl);
 
     // Save to Netlify Blobs
