@@ -13,8 +13,10 @@
     "deploy": "gh-pages -d dist -r https://github.com/Avvienash/QuizApp-frontend.git -b gh-pages -a"
   },
   "dependencies": {
+    "@netlify/blobs": "^10.0.11",
     "@tailwindcss/postcss": "^4.1.12",
     "@tailwindcss/vite": "^4.1.12",
+    "dotenv": "^17.2.3",
     "fast-xml-parser": "^5.2.5",
     "openai": "^5.16.0",
     "react": "^19.1.1",

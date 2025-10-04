@@ -1,12 +1,9 @@
 import OpenAI from "openai";
 import { XMLParser } from "fast-xml-parser";
-
+import { getStore } from "@netlify/blobs";
 
 // --- OpenAI setup ---
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
-
+const openai = new OpenAI({apiKey: process.env.OPENAI_API_KEY});
 
 // --- Helper: Fetch RSS articles ---
 async function fetchRSS(rssUrl) {
@@ -44,29 +41,29 @@ function containsInappropriateContent(quizItem) {
 // --- Helper: Generate question for an article ---
 async function generateQuestionForArticle(article) {
   const prompt = `
-You are a quiz generator. 
-Create **one multiple-choice question** (4 options) based on the following news article:
+    You are a quiz generator. 
+    Create **one multiple-choice question** (4 options) based on the following news article:
 
-Title: ${article.title}
-Description: ${article.description}
+    Title: ${article.title}
+    Description: ${article.description}
 
-GUIDELINES:
-- The question must be **standalone**: it should make sense without referencing "this article" or requiring the reader to see the article.
-- Make the question **specific and intriguing**, including relevant context such as names, dates, locations, or events.
-- Example: Instead of "What city is referred to in this article?", write "Which city hosted the 2024 FIFA World Cup finals?".
-- Another example: Instead of "Why was the meeting held?", write "Why did the Prime Minister of Malaysia meet the Queen of England on 12th August?".
-- Keep the tone **engaging and curious**, like a good trivia question.
-- Provide 1 correct answer + 3 wrong but plausible answers.
+    GUIDELINES:
+    - The question must be **standalone**: it should make sense without referencing "this article" or requiring the reader to see the article.
+    - Make the question **specific and intriguing**, including relevant context such as names, dates, locations, or events.
+    - Example: Instead of "What city is referred to in this article?", write "Which city hosted the 2024 FIFA World Cup finals?".
+    - Another example: Instead of "Why was the meeting held?", write "Why did the Prime Minister of Malaysia meet the Queen of England on 12th August?".
+    - Keep the tone **engaging and curious**, like a good trivia question.
+    - Provide 1 correct answer + 3 wrong but plausible answers.
 
-Format as JSON:
-{
-  "Question": "string",
-  "CorrectAnswer": "string",
-  "WrongAnswer1": "string",
-  "WrongAnswer2": "string",
-  "WrongAnswer3": "string"
-}
-`;
+    Format as JSON:
+    {
+      "Question": "string",
+      "CorrectAnswer": "string",
+      "WrongAnswer1": "string",
+      "WrongAnswer2": "string",
+      "WrongAnswer3": "string"
+    }
+    `;
 
   try {
     const response = await openai.chat.completions.create({
@@ -93,6 +90,7 @@ Format as JSON:
       { text: aiResponse.WrongAnswer2, isCorrect: false },
       { text: aiResponse.WrongAnswer3, isCorrect: false }
     ];
+    
     // Shuffle answers
     for (let i = answers.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -136,7 +134,7 @@ function sleep(ms) {
 }
 
 // --- Main Function: Generate quiz JSON in parallel ---
-async function generateQuizJSON(n = 10, rssUrl = "https://www.thestar.com.my/rss/News/") {
+async function generateQuizJSON(n, rssUrl) {
   const articles = await fetchRSS(rssUrl);
   const candidates = articles.slice(0, n+5);
   const quizPromises = candidates.map(article => tryGenerateQuestion(article));
@@ -154,13 +152,19 @@ async function generateQuizJSON(n = 10, rssUrl = "https://www.thestar.com.my/rss
 // --- Netlify Function Handler ---
 export async function handler(event, context) {
   try {
-    // const params = event.queryStringParameters;
-    // const n = parseInt(params.n) || 10;
-    // const rssUrl = params.url || "https://www.thestar.com.my/rss/News/";
+    console.log("🕐 Generating sheduled quiz...");
+
     const n = 10;
     const rssUrl = "https://feeds.bbci.co.uk/news/rss.xml?edition=int";
-
     const quiz = await generateQuizJSON(n, rssUrl);
+
+    // Save to Netlify Blobs
+    const quizStore = getStore("quiz");
+    await quizStore.set("sheduled-quiz", JSON.stringify(quiz));
+    
+    console.log("✅ Daily quiz saved to Netlify Blobs");
+    console.log(`📊 Generated ${quiz.questions.length} questions`);
+
     return {
       statusCode: 200,
       body: JSON.stringify(quiz),
@@ -174,3 +178,7 @@ export async function handler(event, context) {
   }
 }
 
+// --- Schedule the function to run every 24 hours ---
+export const config = {
+  schedule: "@daily"
+};

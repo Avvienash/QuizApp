@@ -7,90 +7,86 @@ import LoadingScreen from './components/LoadingScreen';
 import QuizReviewScreen from './components/QuizReviewScreen';
 import backgroundVideo from './assets/bg.mp4';
 import winnerVideo from './assets/winner.mp4';
-import { loadFromCache, saveToCache, clearCache} from './utils/cache';
-
+import { loadFromCache, saveToCache } from './utils/cache'; // removed clearCache
 
 function App() {
   // State management
   const [questions, setQuestions] = useState([]);
-  const [screen, setScreen] = useState('start'); // start, quiz, loading, result
+  const [screen, setScreen] = useState('start'); // start, quiz, loading, result, review, error
   const [score, setScore] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [questionsLoaded, setQuestionsLoaded] = useState(false);
   const [showWinnerVideo, setShowWinnerVideo] = useState(false);
 
-  // Generate quiz function
-  const generateQuiz = async () => {
+  // Helper: freshness check (24h)
+  const isFresh = (dateString) => {
+    if (!dateString) return false;
+    const quizDate = new Date(dateString);
+    const now = new Date();
+    return (now - quizDate) < 24 * 60 * 60 * 1000;
+  };
+
+  // Fetch existing daily quiz (no generation here)
+  const fetchQuiz = async () => {
     try {
-      // Generate the quiz data
-      const fetchUrl = "/.netlify/functions/generateQuiz";
-      console.log("Fetching quiz from:", fetchUrl);
-      const res = await fetch(fetchUrl);
+      const res = await fetch("/.netlify/functions/getQuiz");
+      if (!res.ok) throw new Error("Failed to fetch quiz");
       const quizData = await res.json();
-      console.log("Response received as: ", quizData);
-      
-      // Set questions and mark as loaded
-      setQuestions(quizData.questions);
+      setQuestions(quizData.questions || []);
       setQuestionsLoaded(true);
-      
-      // Save to cache
-      saveToCache(quizData.questions);
+      saveToCache(quizData); // store entire object: { date, questions }
     } catch (err) {
-      // Handle any errors that occur during quiz generation
-      console.error('Error generating quiz:', err);
+      console.error("Error fetching quiz:", err);
       setScreen('error');
     }
   };
 
-  // Load quiz function
+  // Load quiz (cached if <24h, else fetch)
   const loadQuiz = () => {
-    const cachedQuestions = loadFromCache();
-    if (cachedQuestions) {
-      setQuestions(cachedQuestions);
+    const cached = loadFromCache();
+    if (cached && isFresh(cached.date) && Array.isArray(cached.questions) && cached.questions.length) {
+      setQuestions(cached.questions);
       setQuestionsLoaded(true);
     } else {
-      generateQuiz();
+      fetchQuiz();
     }
-  }
+  };
 
-  // Load questions on app mount
-  useEffect(() => {loadQuiz()}, []);
+  // On mount
+  useEffect(() => { loadQuiz(); }, []);
 
-  // Handle Start
+  // Start quiz
   const handleStart = () => {
     setScore(0);
     setAnswers([]);
     if (questionsLoaded) {
-      setScreen('quiz'); // Questions are ready, go straight to quiz
+      setScreen('quiz');
     } else {
-      setScreen('loading'); // Questions not ready yet, show loading screen
+      setScreen('loading');
     }
   };
 
-  // Handle when questions finish loading during loading screen
+  // Transition from loading when ready
   useEffect(() => {
     if (questionsLoaded && screen === 'loading') {
       setScreen('quiz');
     }
   }, [questionsLoaded, screen]);
 
-  // Handle Quiz End
+  // Quiz end
   const handleQuizEnd = (finalScore, userAnswers) => {
     setScore(finalScore);
     setAnswers(userAnswers);
-    if (finalScore == questions.length) setShowWinnerVideo(true);
+    if (finalScore === questions.length) setShowWinnerVideo(true);
     setScreen('result');
-    //console.log("Final Score:", finalScore, "out of", questions.length);
   };
 
-  // Handle Try Again
   const handleTryAgain = () => {
     setScore(0);
     setAnswers([]);
     setScreen('quiz');
   };
 
-  // Render different screens based on the current state
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen text-white bg-transparent">
       <video
@@ -103,6 +99,7 @@ function App() {
         <source src={backgroundVideo} type="video/mp4" />
         Your browser does not support the video tag.
       </video>
+
       {showWinnerVideo && (
         <video
           className="fixed inset-0 w-screen h-screen object-cover -z-9 mix-blend-screen"
@@ -112,16 +109,15 @@ function App() {
           onEnded={() => setShowWinnerVideo(false)}
         >
           <source src={winnerVideo} type="video/mp4" />
-        </video> 
+        </video>
       )}
+
       {screen === 'start' && <StartScreen onStart={handleStart} />}
-      {screen === 'loading' && <LoadingScreen /> }
+      {screen === 'loading' && <LoadingScreen />}
       {screen === 'error' && <ErrorScreen onRetry={handleStart} />}
       {screen === 'quiz' && <QuizScreen questions={questions} onQuizEnd={handleQuizEnd} />}
-      {screen === 'result' && <ResultScreen score={score} total={questions.length} onTryAgain={handleTryAgain} onReview={() => setScreen('review')} /> }
-      {screen === 'review' && <QuizReviewScreen questions={questions} userAnswers={answers} onReturnToResults={() => setScreen('result')} /> }
-
-
+      {screen === 'result' && <ResultScreen score={score} total={questions.length} onTryAgain={handleTryAgain} onReview={() => setScreen('review')} />}
+      {screen === 'review' && <QuizReviewScreen questions={questions} userAnswers={answers} onReturnToResults={() => setScreen('result')} />}
     </div>
   );
 }
