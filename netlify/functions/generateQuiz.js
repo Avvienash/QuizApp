@@ -5,6 +5,11 @@ import { getStore } from "@netlify/blobs";
 // --- OpenAI setup ---
 const openai = new OpenAI({apiKey: process.env.OPENAI_API_KEY});
 
+// --- Helper: Get today's date in YYYY-MM-DD format ---
+function getTodayDate() {
+  return new Date().toISOString().split('T')[0];
+}
+
 // --- Helper: Fetch RSS articles ---
 async function fetchRSS(rssUrl) {
   const res = await fetch(rssUrl);
@@ -135,7 +140,11 @@ function sleep(ms) {
 
 // --- Main Function: Generate quiz JSON in parallel ---
 async function generateQuizJSON(n, rssUrl) {
+  console.log(`🔄 Generating new quiz with ${n} questions from RSS feed...`);
+  
   const articles = await fetchRSS(rssUrl);
+  console.log(`📰 Fetched ${articles.length} articles from RSS feed`);
+  
   const candidates = articles.slice(0, n+5);
   const quizPromises = candidates.map(article => tryGenerateQuestion(article));
   const results = await Promise.allSettled(quizPromises);
@@ -143,42 +152,87 @@ async function generateQuizJSON(n, rssUrl) {
     .filter(r => r.status === "fulfilled" && r.value !== null)
     .map(r => r.value)
     .slice(0, n);
+    
+  console.log(`✅ Successfully generated ${quiz.length} questions out of ${n} requested`);
+  
   return {
-    date: new Date().toISOString(),
+    date: getTodayDate(),
     questions: quiz
   };
 }
 
 // --- Netlify Function Handler ---
-export async function handler(event, context) {
+export default async function handler(event, context) {
   try {
-    console.log("🕐 Generating sheduled quiz...");
+    console.log("🚀 Quiz generation function called");
+    
+    const todayDate = getTodayDate();
+    console.log(`📅 Today's date: ${todayDate}`);
 
+    // Check if existing quiz exists in Netlify Blobs
+    const quizStore = getStore("quiz");
+    let existingQuiz = null;
+    
+    try {
+      const storedQuizString = await quizStore.get("scheduled-quiz");
+      if (storedQuizString) {
+        existingQuiz = JSON.parse(storedQuizString);
+        console.log(`📋 Found existing quiz with date: ${existingQuiz.date}`);
+      } else {
+        console.log("📋 No existing quiz found in storage");
+      }
+    } catch (err) {
+      console.log("⚠️ Error retrieving existing quiz from storage:", err.message);
+    }
+
+    // Check if we need to generate a new quiz
+    if (existingQuiz && existingQuiz.date === todayDate) {
+      console.log("✅ Returning existing quiz from today");
+      console.log(`📊 Quiz contains ${existingQuiz.questions.length} questions`);
+      
+      return new Response(JSON.stringify(existingQuiz), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    }
+
+    // Generate new quiz
+    console.log("🔄 Existing quiz is outdated or doesn't exist, generating new quiz...");
+    
     const n = 10;
     const rssUrl = "https://feeds.bbci.co.uk/news/rss.xml?edition=int";
-    const quiz = await generateQuizJSON(n, rssUrl);
+    const newQuiz = await generateQuizJSON(n, rssUrl);
 
     // Save to Netlify Blobs
-    const quizStore = getStore("quiz");
-    await quizStore.set("sheduled-quiz", JSON.stringify(quiz));
+    try {
+      await quizStore.set("scheduled-quiz", JSON.stringify(newQuiz));
+      console.log("💾 New quiz saved to Netlify Blobs storage");
+    } catch (err) {
+      console.error("❌ Failed to save quiz to storage:", err);
+      // Continue anyway, we can still return the quiz
+    }
     
-    console.log("✅ Daily quiz saved to Netlify Blobs");
-    console.log(`📊 Generated ${quiz.questions.length} questions`);
+    console.log("✅ Quiz generation completed successfully");
+    console.log(`📊 Generated ${newQuiz.questions.length} questions`);
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(quiz),
-    };
+    return new Response(JSON.stringify(newQuiz), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
   } catch (err) {
-    console.error("❌ Server error:", err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Failed to generate quiz" }),
-    };
+    console.error("❌ Server error during quiz generation:", err);
+    return new Response(JSON.stringify({ 
+      error: "Failed to generate quiz",
+      message: err.message 
+    }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
   }
 }
-
-// --- Schedule the function to run every 24 hours ---
-export const config = {
-  schedule: "@daily"
-};

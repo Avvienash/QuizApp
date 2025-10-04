@@ -20,16 +20,15 @@ function App() {
 
   // Helper: freshness check (24h)
   const isFresh = (dateString) => {
-    if (!dateString) return false;
-    const quizDate = new Date(dateString);
-    const now = new Date();
-    return (now - quizDate) < 24 * 60 * 60 * 1000;
+    const today = new Date().toISOString().split('T')[0];
+    if (!dateString || dateString !== today) return false;
+    return true;
   };
 
   // Fetch existing daily quiz (no generation here)
   const fetchQuiz = async () => {
     try {
-      const res = await fetch("/.netlify/functions/getQuiz");
+      const res = await fetch("/.netlify/functions/generateQuiz");
       if (!res.ok) throw new Error("Failed to fetch quiz");
       const quizData = await res.json();
       setQuestions(quizData.questions || []);
