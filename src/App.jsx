@@ -6,6 +6,7 @@ import ResultScreen from './components/ResultScreen';
 import LoadingScreen from './components/LoadingScreen';
 import QuizReviewScreen from './components/QuizReviewScreen';
 import backgroundVideo from './assets/bg.mp4';
+import backgroundPoster from './assets/bg.jpg';
 import winnerVideo from './assets/winner.mp4';
 import { loadFromCache, saveToCache } from './utils/cache'; // removed clearCache
 
@@ -89,13 +90,15 @@ function App() {
   };
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen text-white bg-transparent">
+    <div className="relative flex flex-col items-center justify-center min-h-screen text-white">
       <video
         className="fixed inset-0 w-screen h-screen object-cover -z-10"
         autoPlay
         loop
         muted
         playsInline
+        poster={backgroundPoster}
+        preload="metadata"
       >
         <source src={backgroundVideo} type="video/mp4" />
         Your browser does not support the video tag.
