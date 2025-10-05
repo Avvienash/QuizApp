@@ -202,8 +202,11 @@ async function generateQuizJSON(n, rssUrl, category) {
 export default async function handler(event, context) {
   try {
     console.log("🚀 Quiz generation function called");
+    // Console log the entire event for debugging
+    console.log("Event:", event);
+    console.log("Context:", context);
     
-    // Parse category from request - Fix this part
+
     let category = event.queryStringParameters?.category ?? "world";
     
     console.log(`🔍 Requested category: ${category}`);
