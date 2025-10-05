@@ -29,7 +29,7 @@ function App() {
   // Fetch existing daily quiz (no generation here)
   const fetchQuiz = async () => {
     try {
-      const res = await fetch("/.netlify/functions/generateQuiz");
+      const res = await fetch("/.netlify/functions/generateQuiz?category=sport");
       if (!res.ok) throw new Error("Failed to fetch quiz");
       const quizData = await res.json();
       setQuestions(quizData.questions || []);

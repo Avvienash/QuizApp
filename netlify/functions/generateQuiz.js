@@ -2,6 +2,42 @@ import OpenAI from "openai";
 import { XMLParser } from "fast-xml-parser";
 import { getStore } from "@netlify/blobs";
 
+// --- BBC RSS Feeds Configuration ---
+export const BBC_FEEDS = {
+  // General
+  world: "https://feeds.bbci.co.uk/news/world/rss.xml",
+  uk: "https://feeds.bbci.co.uk/news/uk/rss.xml",
+  business: "https://feeds.bbci.co.uk/news/business/rss.xml",
+  politics: "https://feeds.bbci.co.uk/news/politics/rss.xml",
+  health: "https://feeds.bbci.co.uk/news/health/rss.xml",
+  tech: "https://feeds.bbci.co.uk/news/technology/rss.xml",
+  science: "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml",
+  education: "https://feeds.bbci.co.uk/news/education/rss.xml",
+  entertainment: "https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml",
+  sport: "https://feeds.bbci.co.uk/sport/rss.xml?edition=uk",
+
+  // Regional
+  africa: "https://feeds.bbci.co.uk/news/world/africa/rss.xml",
+  asia: "https://feeds.bbci.co.uk/news/world/asia/rss.xml",
+  europe: "https://feeds.bbci.co.uk/news/world/europe/rss.xml",
+  latin_america: "https://feeds.bbci.co.uk/news/world/latin_america/rss.xml",
+  middle_east: "https://feeds.bbci.co.uk/news/world/middle_east/rss.xml",
+  us_canada: "https://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml",
+
+  // Culture
+  travel: "https://www.bbc.com/travel/feed.rss",
+  culture: "https://www.bbc.com/culture/feed.rss",
+  music: "https://www.bbc.com/culture/music/rss.xml",
+  film_tv: "https://www.bbc.com/culture/film-tv/rss.xml",
+  art_design: "https://www.bbc.com/culture/art/rss.xml",
+  books: "https://www.bbc.com/culture/books/rss.xml",
+  style: "https://www.bbc.com/culture/style/rss.xml",
+
+  // Innovation
+  ai: "https://www.bbc.com/innovation/artificial-intelligence/rss.xml",
+  science_health: "https://www.bbc.com/innovation/science/rss.xml",
+};
+
 // --- OpenAI setup ---
 const openai = new OpenAI({apiKey: process.env.OPENAI_API_KEY});
 
@@ -72,7 +108,7 @@ async function generateQuestionForArticle(article) {
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.6
     });
@@ -139,13 +175,13 @@ function sleep(ms) {
 }
 
 // --- Main Function: Generate quiz JSON in parallel ---
-async function generateQuizJSON(n, rssUrl) {
-  console.log(`🔄 Generating new quiz with ${n} questions from RSS feed...`);
+async function generateQuizJSON(n, rssUrl, category) {
+  console.log(`🔄 Generating new ${category} quiz with ${n} questions from RSS feed...`);
   
   const articles = await fetchRSS(rssUrl);
   console.log(`📰 Fetched ${articles.length} articles from RSS feed`);
   
-  const candidates = articles.slice(0, n+5);
+  const candidates = articles.slice(0, n+1);
   const quizPromises = candidates.map(article => tryGenerateQuestion(article));
   const results = await Promise.allSettled(quizPromises);
   const quiz = results
@@ -157,6 +193,7 @@ async function generateQuizJSON(n, rssUrl) {
   
   return {
     date: getTodayDate(),
+    category: category,
     questions: quiz
   };
 }
@@ -166,72 +203,98 @@ export default async function handler(event, context) {
   try {
     console.log("🚀 Quiz generation function called");
     
+    // Parse category from request - Fix this part
+    let category = event.queryStringParameters?.category ?? "world";
+    
+    console.log(`🔍 Requested category: ${category}`);
+
+    // Validate category
+    if (!BBC_FEEDS[category]) {
+      console.log(`❌ Invalid category: ${category}, defaulting to world`);
+      category = "world";
+    }
+
     const todayDate = getTodayDate();
+    const rssUrl = BBC_FEEDS[category];
+    const blobKey = `quiz-${category}`;
+    
     console.log(`📅 Today's date: ${todayDate}`);
+    console.log(`📂 Category: ${category}`);
+    console.log(`🔗 RSS URL: ${rssUrl}`);
+    console.log(`💾 Blob key: ${blobKey}`);
 
     // Check if existing quiz exists in Netlify Blobs
     const quizStore = getStore("quiz");
     let existingQuiz = null;
     
     try {
-      const storedQuizString = await quizStore.get("scheduled-quiz");
+      const storedQuizString = await quizStore.get(blobKey);
       if (storedQuizString) {
         existingQuiz = JSON.parse(storedQuizString);
-        console.log(`📋 Found existing quiz with date: ${existingQuiz.date}`);
+        console.log(`📋 Found existing ${category} quiz with date: ${existingQuiz.date}`);
       } else {
-        console.log("📋 No existing quiz found in storage");
+        console.log(`📋 No existing ${category} quiz found in storage`);
       }
     } catch (err) {
-      console.log("⚠️ Error retrieving existing quiz from storage:", err.message);
+      console.log(`⚠️ Error retrieving existing ${category} quiz from storage:`, err.message);
     }
 
     // Check if we need to generate a new quiz
     if (existingQuiz && existingQuiz.date === todayDate) {
-      console.log("✅ Returning existing quiz from today");
+      console.log(`✅ Returning existing ${category} quiz from today`);
       console.log(`📊 Quiz contains ${existingQuiz.questions.length} questions`);
       
       return new Response(JSON.stringify(existingQuiz), {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
         },
       });
     }
 
     // Generate new quiz
-    console.log("🔄 Existing quiz is outdated or doesn't exist, generating new quiz...");
+    console.log(`🔄 Existing ${category} quiz is outdated or doesn't exist, generating new quiz...`);
     
     const n = 10;
-    const rssUrl = "https://feeds.bbci.co.uk/news/world/rss.xml";
-    const newQuiz = await generateQuizJSON(n, rssUrl);
+    const newQuiz = await generateQuizJSON(n, rssUrl, category);
 
-    // Save to Netlify Blobs
+    // Save to Netlify Blobs with category-specific key
     try {
-      await quizStore.set("scheduled-quiz", JSON.stringify(newQuiz));
-      console.log("💾 New quiz saved to Netlify Blobs storage");
+      await quizStore.set(blobKey, JSON.stringify(newQuiz));
+      console.log(`💾 New ${category} quiz saved to Netlify Blobs storage`);
     } catch (err) {
-      console.error("❌ Failed to save quiz to storage:", err);
+      console.error(`❌ Failed to save ${category} quiz to storage:`, err);
       // Continue anyway, we can still return the quiz
     }
     
-    console.log("✅ Quiz generation completed successfully");
+    console.log(`✅ ${category} quiz generation completed successfully`);
     console.log(`📊 Generated ${newQuiz.questions.length} questions`);
 
     return new Response(JSON.stringify(newQuiz), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
       },
     });
   } catch (err) {
     console.error("❌ Server error during quiz generation:", err);
     return new Response(JSON.stringify({ 
       error: "Failed to generate quiz",
-      message: err.message 
+      message: err.message,
+      availableCategories: Object.keys(BBC_FEEDS)
     }), {
       status: 500,
       headers: {
         'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
       },
     });
   }
