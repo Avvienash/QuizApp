@@ -1,5 +1,4 @@
 import { getStore } from "@netlify/blobs";
-import { BBC_FEEDS } from "./lib/config.js";
 
 // --- Netlify Function Handler to clear all saved quizzes ---
 export default async function handler(event, context) {
@@ -8,30 +7,42 @@ export default async function handler(event, context) {
 
     const quizStore = getStore("quiz");
     
-    // Get all available categories from BBC_FEEDS
-    const categories = Object.keys(BBC_FEEDS);
-    console.log(`📋 Found ${categories.length} quiz categories to clear`);
+    // Get all blobs in the store
+    const { blobs } = await quizStore.list();
+    console.log(`📋 Found ${blobs.length} quiz blobs to clear`);
     
-    // Clear each category-specific quiz
-    const clearPromises = categories.map(async (category) => {
-      const blobKey = `quiz-${category}`;
+    if (blobs.length === 0) {
+      console.log("ℹ️ No quizzes found to clear");
+      return new Response(JSON.stringify({
+        message: "No quizzes found to clear",
+        summary: {
+          totalBlobs: 0,
+          successfullyCleared: 0,
+          errors: 0
+        },
+        details: []
+      }), {
+        status: 200,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, DELETE',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      });
+    }
+    
+    // Clear each blob
+    const clearPromises = blobs.map(async (blob) => {
       try {
-        await quizStore.delete(blobKey);
-        console.log(`✅ Cleared ${category} quiz from storage`);
-        return { category, status: 'cleared' };
+        await quizStore.delete(blob.key);
+        console.log(`✅ Cleared blob with key: ${blob.key}`);
+        return { key: blob.key, status: 'cleared' };
       } catch (err) {
-        console.error(`❌ Failed to clear ${category} quiz:`, err.message);
-        return { category, status: 'error', error: err.message };
+        console.error(`❌ Failed to clear blob ${blob.key}:`, err.message);
+        return { key: blob.key, status: 'error', error: err.message };
       }
     });
-
-    // Also clear the old legacy quiz key if it exists
-    try {
-      await quizStore.delete("scheduled-quiz");
-      console.log("✅ Cleared legacy quiz from storage");
-    } catch (err) {
-      console.log("ℹ️ No legacy quiz found to clear");
-    }
 
     // Wait for all clear operations to complete
     const results = await Promise.allSettled(clearPromises);
@@ -47,12 +58,11 @@ export default async function handler(event, context) {
     return new Response(JSON.stringify({
       message: "Quiz clearing operation completed",
       summary: {
-        totalCategories: categories.length,
+        totalBlobs: blobs.length,
         successfullyCleared: successCount,
         errors: errorCount
       },
-      details: clearedQuizzes,
-      availableCategories: categories
+      details: clearedQuizzes
     }), {
       status: 200,
       headers: { 

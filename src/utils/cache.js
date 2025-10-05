@@ -1,15 +1,13 @@
-const CACHE_KEY = 'quiz_questions';
-const CACHE_DURATION = 60 * 60 * 1000; 
-
 // Check if cached data is still valid
 export const isCacheValid = (timestamp) => {
-  return Date.now() - timestamp < CACHE_DURATION;
+  return Date.now() - timestamp < 60 * 60 * 1000; // 1 hour
 };
 
 // Load questions from cache
-export const loadFromCache = () => {
+export const loadFromCache = (key) => {
   try {
-    const cached = localStorage.getItem(CACHE_KEY);
+    console.log("category:", key);
+    const cached = localStorage.getItem(`quiz-${key}`);
     if (cached) {
       const { questions: cachedQuestions, timestamp } = JSON.parse(cached);
       
@@ -22,24 +20,24 @@ export const loadFromCache = () => {
         return cachedQuestions;
       } else {
         console.log("Cache expired and internet available, removing old data");
-        localStorage.removeItem(CACHE_KEY);
+        localStorage.removeItem(`quiz-${key}`);
       }
     }
   } catch (err) {
     console.error('Error loading from cache:', err);
-    localStorage.removeItem(CACHE_KEY);
+    localStorage.removeItem(`quiz-${key}`);
   }
   return null;
 };
 
 // Save questions to cache
-export const saveToCache = (questionsData) => {
+export const saveToCache = (key,questionsData) => {
   try {
     const cacheData = {
       questions: questionsData,
       timestamp: Date.now()
     };
-    localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+    localStorage.setItem(`quiz-${key}`, JSON.stringify(cacheData));
     console.log("Questions saved to cache");
   } catch (err) {
     console.error('Error saving to cache:', err);
@@ -47,15 +45,15 @@ export const saveToCache = (questionsData) => {
 };
 
 // Clear cache function (optional - for debugging/manual refresh)
-export const clearCache = () => {
-  localStorage.removeItem(CACHE_KEY);
-  console.log("Cache cleared");
+export const clearCache = (key) => {
+  localStorage.removeItem(`quiz-${key}`);
+  console.log("Cache cleared for key:", key);
 };
 
 // Check if cache exists and is valid
-export const hasCachedQuestions = () => {
+export const hasCachedQuestions = (key) => {
   try {
-    const cached = localStorage.getItem(CACHE_KEY);
+    const cached = localStorage.getItem(`quiz-${key}`);
     if (cached) {
       const { timestamp } = JSON.parse(cached);
       return isCacheValid(timestamp);

@@ -10,6 +10,9 @@ import backgroundPoster from './assets/bg.jpg';
 import winnerVideo from './assets/winner.mp4';
 import { loadFromCache, saveToCache } from './utils/cache'; // removed clearCache
 
+
+const disable_cache = false; // for testing
+
 function App() {
   // State management
   const [questions, setQuestions] = useState([]);
@@ -18,6 +21,7 @@ function App() {
   const [answers, setAnswers] = useState([]);
   const [questionsLoaded, setQuestionsLoaded] = useState(false);
   const [showWinnerVideo, setShowWinnerVideo] = useState(false);
+  const [category, setCategory] = useState('world'); // default category
 
   // Helper: freshness check (24h)
   const isFresh = (dateString) => {
@@ -27,14 +31,14 @@ function App() {
   };
 
   // Fetch existing daily quiz (no generation here)
-  const fetchQuiz = async () => {
+  const fetchQuiz = async (categoryToFetch = category) => {
     try {
-      const res = await fetch("/.netlify/functions/generateQuiz?category=sport");
+      const res = await fetch("/.netlify/functions/generateQuiz?category=" + categoryToFetch);
       if (!res.ok) throw new Error("Failed to fetch quiz");
       const quizData = await res.json();
       setQuestions(quizData.questions || []);
       setQuestionsLoaded(true);
-      saveToCache(quizData); // store entire object: { date, questions }
+      saveToCache(categoryToFetch, quizData); // store entire object: { date, questions }
     } catch (err) {
       console.error("Error fetching quiz:", err);
       setScreen('error');
@@ -42,13 +46,18 @@ function App() {
   };
 
   // Load quiz (cached if <24h, else fetch)
-  const loadQuiz = () => {
-    const cached = loadFromCache();
+  const loadQuiz = (categoryToLoad = category) => {
+    if (disable_cache) {
+      fetchQuiz(categoryToLoad);
+      return;
+    }
+
+    const cached = loadFromCache(categoryToLoad);
     if (cached && isFresh(cached.date) && Array.isArray(cached.questions) && cached.questions.length) {
       setQuestions(cached.questions);
       setQuestionsLoaded(true);
     } else {
-      fetchQuiz();
+      fetchQuiz(categoryToLoad);
     }
   };
 
@@ -89,6 +98,18 @@ function App() {
     setScreen('start');
   };
 
+  // change category
+  const changeCategory = (newCategory) => {
+    console.log("Changing category to:", newCategory);
+    if (newCategory !== category) {
+      setCategory(newCategory);
+      setQuestions([]);
+      setQuestionsLoaded(false);
+      // Pass the new category directly since state hasn't updated yet
+      loadQuiz(newCategory);
+    }
+  };
+
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen text-white">
       <video
@@ -116,7 +137,7 @@ function App() {
         </video>
       )}
 
-      {screen === 'start' && <StartScreen onStart={handleStart} />}
+      {screen === 'start' && <StartScreen onStart={handleStart} onCategoryChange={changeCategory} selectedCategory={category} />}
       {screen === 'loading' && <LoadingScreen />}
       {screen === 'error' && <ErrorScreen onRetry={handleStart} />}
       {screen === 'quiz' && <QuizScreen questions={questions} onQuizEnd={handleQuizEnd} />}

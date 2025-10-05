@@ -1,3 +1,11 @@
+export function getTodayDate() {
+  return new Date().toISOString().split('T')[0];
+}
+
+export function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export function containsInappropriateContent(quizItem) {
   const inappropriateKeywords = [
     "sexual assault", "rape", "murder", "murdered", "kill", "killed", "death", "dead",

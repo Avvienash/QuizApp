@@ -1,9 +1,10 @@
 import OpenAI from "openai";
-import { containsInappropriateContent } from "./contentFilter.js";
+import { fetchRSS } from "./rssService.js";
+import { getTodayDate } from "../utils/helpers.js";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-export async function generateQuestionForArticle(article) {
+async function generateQuestionForArticle(article) {
   const prompt = `
     You are a quiz generator. 
     Create **one multiple-choice question** (4 options) based on the following news article:
@@ -31,7 +32,7 @@ export async function generateQuestionForArticle(article) {
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.6
     });
@@ -64,7 +65,7 @@ export async function generateQuestionForArticle(article) {
     const correctAnswerIndex = answers.findIndex(a => a.isCorrect);
     const correctAnswerLetter = ["A", "B", "C", "D"][correctAnswerIndex];
 
-    const quizItem = {
+    return {
       Question: aiResponse.Question,
       "Option A": answers[0].text,
       "Option B": answers[1].text,
@@ -73,18 +74,39 @@ export async function generateQuestionForArticle(article) {
       Answer: correctAnswerLetter,
       Source: article.link
     };
-
-    return quizItem;
   } catch (err) {
     console.error("❌ Error generating question:", err);
     return null;
   }
 }
 
-export async function tryGenerateQuestion(article, attempts = 2) {
+async function tryGenerateQuestion(article, attempts = 2) {
   for (let i = 0; i < attempts; i++) {
     const question = await generateQuestionForArticle(article);
     if (question) return question;
   }
   return null;
+}
+
+export async function generateQuizJSON(n, rssUrl, category) {
+  console.log(`🔄 Generating new ${category} quiz with ${n} questions from RSS feed...`);
+  
+  const articles = await fetchRSS(rssUrl);
+  console.log(`📰 Fetched ${articles.length} articles from RSS feed`);
+  
+  const candidates = articles.slice(0, n + 1);
+  const quizPromises = candidates.map(article => tryGenerateQuestion(article));
+  const results = await Promise.allSettled(quizPromises);
+  const quiz = results
+    .filter(r => r.status === "fulfilled" && r.value !== null)
+    .map(r => r.value)
+    .slice(0, n);
+    
+  console.log(`✅ Successfully generated ${quiz.length} questions out of ${n} requested`);
+  
+  return {
+    date: getTodayDate(),
+    category: category,
+    questions: quiz
+  };
 }
