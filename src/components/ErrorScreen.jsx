@@ -1,4 +1,5 @@
-import './Components.css';
+import './styles/Components.css';
+import './styles/ErrorScreen.css';
 
 export default function ErrorScreen({ onRetry }) {
   return (

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import "./Components.css";
+import "./styles/Components.css";
+import "./styles/QuizReviewScreen.css";
 
 export default function QuizReviewScreen({ questions, userAnswers, onReturnToResults }) {
   const [currentIndex, setCurrentIndex] = useState(0);

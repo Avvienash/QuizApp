@@ -1,0 +1,88 @@
+/* General Styles */
+
+:root {
+  --text-color-primary : #ffffff;
+  --font-weight-primary : 700;
+
+  /* Responsive typography with clamp(min, preferred, max) */
+  --fs-title: clamp(1.5rem, 4vw, 2rem);
+  --fs-title-highlight: clamp(2rem, 6vw, 3rem);
+  --fs-question: clamp(1rem, 3.5vw, 1.3rem);
+  --fs-option: clamp(0.9rem, 3vw, 1.1rem);
+  --fs-button: clamp(1rem, 4vw, 1.5rem);
+}
+
+.glass-screen {
+  width: 90%;
+  max-width: 800px;
+  margin: 1.5rem auto;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.title {
+  font-size: var(--fs-title);
+  color: var(--text-color-primary);
+  font-weight: var(--font-weight-primary);
+  text-align: center;
+  margin: 0;
+}
+
+.title-highlight {
+  font-size: var(--fs-title-highlight);
+  color: var(--text-color-primary);
+  margin: 0;
+  font-weight: var(--font-weight-primary);
+  text-align: center;
+}
+
+.event-btn {
+  width: 100%;
+  max-width: 500px;
+  align-self: center;
+  padding: 0.8rem 1.5rem;
+  font-size: var(--fs-button);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--text-color-primary);
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(31, 38, 135, 0.2);
+  transition: all 0.3s ease;
+  font-weight: var(--font-weight-primary);
+}
+
+.event-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(31, 38, 135, 0.3);
+}
+
+
+
+
+
+/* Mobile-specific tweaks */
+@media (max-width: 480px) {
+  .glass-screen {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+
+  .event-btn {
+    padding: 0.7rem 1rem;
+    border-radius: 15px;
+  }
+  
+}

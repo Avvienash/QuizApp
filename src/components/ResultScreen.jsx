@@ -1,4 +1,5 @@
-import './Components.css';
+import './styles/Components.css';
+import './styles/ResultScreen.css';
 
 export default function ResultScreen({ score, total, onReview,  onHome }) {
   const percentage = (score / total) * 100;
