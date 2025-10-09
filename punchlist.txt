@@ -1,3 +1,19 @@
 -- Multiple News Sources
 -- User Authentication - Leaderboard / Personal Bests etc
 -- Multiplayer Quiz Mode (low priority)
+--  Consider buying a domain
+-- Marketing
+-- monetization (ads, premium features etc) -- AUthentication first (supabase?) -- payment gateway (stripe?) --adsense?
+
+personal notes:
+how to create branch and merge back to main
+git checkout -b my-feature-branch # create and switch to new branch
+git add .                  # stage changes
+git commit -m "Describe what you changed" # commit changes
+git push -u origin my-feature-branch # push branch to remote
+git checkout main          # switch back to main
+git pull origin main           # make sure main is up-to-date
+git merge my-feature-branch    # merge your feature branch
+git push origin main           # update remote main
+git branch -d my-feature-branch        # deletes local branch
+git push origin --delete my-feature-branch  # deletes remote branch

@@ -1,7 +1,6 @@
 export const BBC_FEEDS = {
   // General
   world: "https://feeds.bbci.co.uk/news/world/rss.xml",
-  uk: "https://feeds.bbci.co.uk/news/uk/rss.xml",
   business: "https://feeds.bbci.co.uk/news/business/rss.xml",
   politics: "https://feeds.bbci.co.uk/news/politics/rss.xml",
   health: "https://feeds.bbci.co.uk/news/health/rss.xml",
