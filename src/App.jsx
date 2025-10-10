@@ -137,6 +137,7 @@ function App() {
         </video>
       )}
 
+      
       {screen === 'start' && <StartScreen onStart={handleStart} onCategoryChange={changeCategory} selectedCategory={category} />}
       {screen === 'loading' && <LoadingScreen />}
       {screen === 'error' && <ErrorScreen onRetry={handleStart} />}
