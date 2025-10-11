@@ -1,0 +1,109 @@
+.settings-menu-container {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 100;
+}
+
+.settings-trigger {
+  padding: 0.5rem;
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--text-color-primary);
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(31, 38, 135, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-trigger:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(31, 38, 135, 0.2);
+}
+
+.settings-trigger svg {
+  transition: transform 0.3s ease;
+}
+
+.settings-trigger.rotate svg {
+  transform: rotate(90deg);
+}
+
+.settings-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: 180px;
+  background: rgba(150, 150, 150, 0.85); /* Darker, more opaque background */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.35);
+  overflow: hidden;
+  animation: settingsDropdownFadeIn 0.3s ease;
+}
+
+@keyframes settingsDropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.settings-option {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  font-size: var(--fs-option);
+  border: none;
+  background: transparent;
+  color: var(--text-color-primary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: var(--font-weight-primary);
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.settings-option:last-child {
+  border-bottom: none;
+}
+
+.settings-option:hover {
+  background: rgba(150, 150, 150, 0.35); /* Slightly more opaque hover */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Mobile-specific tweaks */
+@media (max-width: 480px) {
+  .settings-menu-container {
+    top: 1rem;
+    right: 1rem;
+  }
+
+  .settings-trigger {
+    padding: 0.4rem;
+    border-radius: 12px;
+  }
+
+  .settings-dropdown {
+    min-width: 160px;
+  }
+
+  .settings-option {
+    padding: 0.6rem 0.8rem;
+  }
+}

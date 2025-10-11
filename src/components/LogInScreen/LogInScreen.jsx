@@ -1,0 +1,273 @@
+import { useState, useEffect } from 'react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import '../Components.css';
+import './LogInScreen.css';
+import { supabase } from '../../utils/supabaseClient';
+
+export default function LogInScreen( { onLoginSuccess, onHome }) {
+  const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup' | 'forgotPassword' | 'resetPassword'
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event);
+      if (event === 'PASSWORD_RECOVERY') {
+        console.log('Password recovery event detected');
+        setAuthMode('resetPassword');
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const changeAuthMode = (mode) => {
+    setAuthMode(mode);
+    setError('');
+    setSuccess('');
+  };
+
+  const handleAuth = async () => {
+    console.log('handleAuth called with authMode:', authMode);
+    setError('');
+    setSuccess('');
+    setBusy(true);
+
+    try {
+      if (authMode === 'forgotPassword') {
+        console.log('Attempting password reset for email:', email);
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email);
+        if (resetError) throw resetError;
+        console.log('Password reset email sent successfully');
+        setSuccess('Check your email for reset instructions.');
+      } else if (authMode === 'resetPassword') {
+        console.log('Attempting to update password');
+        if (newPassword !== confirmPassword) {
+          throw new Error('Passwords do not match');
+        }
+        if (newPassword.length < 6) {
+          throw new Error('Password must be at least 6 characters');
+        }
+        const { data, error: updateError } = await supabase.auth.updateUser({ 
+          password: newPassword 
+        });
+        if (updateError) throw updateError;
+        console.log('Password updated successfully');
+        setSuccess('Password updated successfully!');
+        setTimeout(() => changeAuthMode('login'), 2000);
+      } else if (authMode === 'signup') {
+        console.log('Attempting signup for email:', email, 'with name:', name);
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { name } },
+        });
+        if (signUpError) throw signUpError;
+        console.log('Signup successful');
+        
+        // Automatically sign in after successful signup
+        console.log('Auto-login after signup for email:', email);
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInError) throw signInError;
+        console.log('Auto-login successful');
+        if (onLoginSuccess) onLoginSuccess();
+      } else { // login
+        console.log('Attempting login for email:', email);
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInError) throw signInError;
+        console.log('Login successful');
+        if (onLoginSuccess) onLoginSuccess();
+      }
+    } catch (e) {
+      console.error('Authentication error:', e.message, e);
+      setError(e.message);
+    } finally {
+      console.log('handleAuth completed, busy state reset');
+      setBusy(false);
+    }
+
+
+  };
+
+  const inputClass = (forceError) =>
+    `auth-input${forceError ? ' auth-input-error' : ''}`;
+
+  return (
+    <div className="glass-screen">
+      <h1 className="title">
+        {authMode === 'resetPassword' 
+          ? 'Reset Your Password' 
+          : 'Welcome to NewsFlash Quiz'}
+      </h1>
+
+      {authMode === 'signup' && (
+        <input
+          className={inputClass(!!error && !name)}
+          type="text"
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          disabled={busy}
+        />
+      )}
+
+      {authMode !== 'resetPassword' && (
+        <input
+          className={inputClass(!!error)}
+          type="email"
+          placeholder="Email"
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={busy}
+        />
+      )}
+
+      {authMode === 'resetPassword' && (
+        <>
+          <div className="password-wrapper">
+            <input
+              className={inputClass(!!error)}
+              type={showNewPassword ? 'text' : 'password'}
+              placeholder="New Password"
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              disabled={busy}
+            />
+            <button
+              type="button"
+              className="password-toggle-btn"
+              onClick={() => setShowNewPassword(!showNewPassword)}
+            >
+              {showNewPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+            </button>
+          </div>
+
+          <div className="password-wrapper">
+            <input
+              className={inputClass(!!error)}
+              type={showConfirmPassword ? 'text' : 'password'}
+              placeholder="Confirm New Password"
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={busy}
+            />
+            <button
+              type="button"
+              className="password-toggle-btn"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              {showConfirmPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+            </button>
+          </div>
+        </>
+      )}
+
+      {authMode !== 'forgotPassword' && authMode !== 'resetPassword' && (
+        <div className="password-wrapper">
+          <input
+            className={inputClass(!!error)}
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={busy}
+          />
+          <button
+            type="button"
+            className="password-toggle-btn"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+          </button>
+        </div>
+      )}
+
+      {error && <div className="auth-error">{error}</div>}
+      {success && <div className="auth-success">{success}</div>}
+      {(!error && !success) && <div className="auth-error invisible">placeholder</div>}
+
+      <button className="event-btn" onClick={handleAuth} disabled={busy}>
+        {busy ? (
+          <span className="flex items-center justify-center gap-2">
+            <Loader2 className="animate-spin" size={30} strokeWidth={4} />
+            {authMode === 'forgotPassword'
+              ? 'Sending...'
+              : authMode === 'resetPassword'
+              ? 'Updating...'
+              : authMode === 'signup'
+              ? 'Signing up...'
+              : 'Logging in...'}
+          </span>
+        ) : (
+          <>
+            {authMode === 'forgotPassword'
+              ? 'Send Reset Email'
+              : authMode === 'resetPassword'
+              ? 'Update Password'
+              : authMode === 'signup'
+              ? 'Sign Up'
+              : 'Log In'}
+          </>
+        )}
+      </button>
+
+      {authMode !== 'forgotPassword' && authMode !== 'resetPassword' && (
+        <button className="event-btn" onClick={onHome} disabled={busy}>
+            Home
+        </button>
+      )}
+
+      {authMode !== 'forgotPassword' && authMode !== 'resetPassword' && (
+        <button
+          type="button"
+          className="source-link source-link-text"
+          onClick={() =>
+            changeAuthMode(authMode === 'signup' ? 'login' : 'signup')
+          }
+          disabled={busy}
+        >
+          {authMode === 'signup'
+            ? 'Already have an account? Log In'
+            : "Don't have an account? Sign Up"}
+        </button>
+      )}
+
+      {authMode === 'login' && (
+        <button
+          type="button"
+          className="source-link source-link-text"
+          onClick={() => changeAuthMode('forgotPassword')}
+          disabled={busy}
+        >
+          Forgot your password?
+        </button>
+      )}
+
+      {authMode === 'forgotPassword' && (
+        <button
+          type="button"
+          className="source-link source-link-text"
+          onClick={() => changeAuthMode('login')}
+          disabled={busy}
+        >
+          Back to login
+        </button>
+      )}
+    </div>
+  );
+}

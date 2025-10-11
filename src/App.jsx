@@ -1,27 +1,47 @@
 import {useState, useEffect} from "react";
-import StartScreen from './components/StartScreen';
-import ErrorScreen from './components/ErrorScreen';
-import QuizScreen from './components/QuizScreen';
-import ResultScreen from './components/ResultScreen';
-import LoadingScreen from './components/LoadingScreen';
-import QuizReviewScreen from './components/QuizReviewScreen';
+import StartScreen from './components/StartScreen/StartScreen';
+import ErrorScreen from './components/ErrorScreen/ErrorScreen';
+import QuizScreen from './components/QuizScreen/QuizScreen';
+import ResultScreen from './components/ResultsScreen/ResultScreen';
+import LoadingScreen from './components/LoadingScreen/LoadingScreen';
+import QuizReviewScreen from './components/QuizReviewScreen/QuizReviewScreen';
+import LogInScreen from "./components/LogInScreen/LogInScreen";
+import UpdateProfileScreen from './components/UpdateProfileScreen/UpdateProfileScreen';
 import backgroundVideo from './assets/bg.mp4';
 import backgroundPoster from './assets/bg.jpg';
 import winnerVideo from './assets/winner.mp4';
-import { loadFromCache, saveToCache } from './utils/cache'; // removed clearCache
+import { loadFromCache, saveToCache } from './utils/cache';
+import { supabase } from './utils/supabaseClient';
 
-
-const disable_cache = false; // for testing
+const disable_cache = false;
 
 function App() {
   // State management
   const [questions, setQuestions] = useState([]);
-  const [screen, setScreen] = useState('start'); // start, quiz, loading, result, review, error
+  const [screen, setScreen] = useState('start'); // 'start' | 'quiz' | 'result' | 'login' | 'updateProfile'
   const [score, setScore] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [questionsLoaded, setQuestionsLoaded] = useState(false);
   const [showWinnerVideo, setShowWinnerVideo] = useState(false);
-  const [category, setCategory] = useState('world'); // default category
+  const [category, setCategory] = useState('world');
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Check for existing session on mount
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Helper: freshness check (24h)
   const isFresh = (dateString) => {
@@ -30,7 +50,7 @@ function App() {
     return true;
   };
 
-  // Fetch existing daily quiz (no generation here)
+  // Fetch existing daily quiz
   const fetchQuiz = async (categoryToFetch = category) => {
     try {
       const res = await fetch("/.netlify/functions/generateQuiz?category=" + categoryToFetch);
@@ -38,7 +58,7 @@ function App() {
       const quizData = await res.json();
       setQuestions(quizData.questions || []);
       setQuestionsLoaded(true);
-      saveToCache(categoryToFetch, quizData); // store entire object: { date, questions }
+      saveToCache(categoryToFetch, quizData);
     } catch (err) {
       console.error("Error fetching quiz:", err);
       setScreen('error');
@@ -64,7 +84,7 @@ function App() {
   // On mount
   useEffect(() => { loadQuiz(); }, []);
 
-  // Start quiz
+   // Start quiz
   const handleStart = () => {
     setScore(0);
     setAnswers([]);
@@ -98,6 +118,27 @@ function App() {
     setScreen('start');
   };
 
+  // Handle login
+  const handleLogin = () => {
+    setScreen('login');
+  };
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setSession(null);
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  // Handle successful login
+  const handleLoginSuccess = () => {
+    setScreen('start');
+  };
+
   // change category
   const changeCategory = (newCategory) => {
     console.log("Changing category to:", newCategory);
@@ -105,10 +146,37 @@ function App() {
       setCategory(newCategory);
       setQuestions([]);
       setQuestionsLoaded(false);
-      // Pass the new category directly since state hasn't updated yet
       loadQuiz(newCategory);
     }
   };
+
+  const handleUpdateProfile = () => {
+    setScreen('updateProfile');
+  };
+
+  const handleBackToHome = () => {
+    setScreen('start');
+  };
+
+  // Show loading while checking session
+  if (loading) {
+    return (
+      <div className="relative flex flex-col items-center justify-center min-h-screen text-white">
+        <video
+          className="fixed inset-0 w-screen h-screen object-cover -z-10"
+          autoPlay
+          loop
+          muted
+          playsInline
+          poster={backgroundPoster}
+          preload="metadata"
+        >
+          <source src={backgroundVideo} type="video/mp4" />
+        </video>
+        <LoadingScreen />
+      </div>
+    );
+  }
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen text-white">
@@ -136,14 +204,15 @@ function App() {
           <source src={winnerVideo} type="video/mp4" />
         </video>
       )}
-
       
-      {screen === 'start' && <StartScreen onStart={handleStart} onCategoryChange={changeCategory} selectedCategory={category} />}
-      {screen === 'loading' && <LoadingScreen />}
       {screen === 'error' && <ErrorScreen onRetry={handleStart} />}
+      {screen === 'loading' && <LoadingScreen />}
+      {screen === 'login' && <LogInScreen onLoginSuccess={handleLoginSuccess} onHome={handleHome} />}
       {screen === 'quiz' && <QuizScreen questions={questions} onQuizEnd={handleQuizEnd} />}
       {screen === 'result' && <ResultScreen score={score} total={questions.length} onHome={handleHome} onReview={() => setScreen('review')} />}
       {screen === 'review' && <QuizReviewScreen questions={questions} userAnswers={answers} onReturnToResults={() => setScreen('result')} />}
+      {screen === 'start' && <StartScreen onStart={handleStart} onCategoryChange={changeCategory} selectedCategory={category}isLoggedIn={!!session}onLogIn={handleLogin}onLogOut={handleLogout}onUpdateProfile={handleUpdateProfile}session={session} />}
+      {screen === 'updateProfile' && <UpdateProfileScreen onBack={handleBackToHome} session={session} />}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import "./styles/Components.css";
-import "./styles/QuizScreen.css";
+import "../Components.css";
+import "./QuizScreen.css";
 
 const QUIZ_TIME_LIMIT = 60;
 const QUIZ_TIME_WARNING_THRESHOLD = 5;

@@ -246,15 +246,6 @@ Refer to the repository tree above for file locations linked throughout this doc
 - **OpenAI Quotas:** Handle API rate limits gracefully—`generateQuizJSON` already retries per article; consider exponential backoff if quotas tighten.
 - **RSS Changes:** If BBC feed schemas shift, adjust [`functions/services/rssService.fetchRSS`](netlify/functions/services/rssService.js) parsing.
 
----
-
-## Roadmap Ideas
-
-- Add unit tests for timer and cache flows.
-- Persist user scores historically (requires backend storage).
-- Internationalize copy and category labels sourced from [`src/utils/categories`](src/utils/categories.js).
-- Introduce difficulty settings (alter timer, question selection).
-- Surface daily streaks and shareable results with dynamic Open Graph images.
 
 ---
 

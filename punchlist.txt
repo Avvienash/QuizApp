@@ -5,6 +5,12 @@
 -- Marketing
 -- monetization (ads, premium features etc) -- AUthentication first (supabase?) -- payment gateway (stripe?) --adsense?
 
+High Priority:
+-- Split the login Screen into multiple screens (login, signup, forgot password)
+-- move the helper funtions in App.jsx to separate files
+
+
+
 personal notes:
 how to create branch and merge back to main
 git checkout -b my-feature-branch # create and switch to new branch

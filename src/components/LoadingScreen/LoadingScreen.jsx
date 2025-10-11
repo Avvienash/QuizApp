@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import './styles/Components.css';
-import './styles/LoadingScreen.css';
+import '../Components.css';
+import './LoadingScreen.css';
 
 export default function LoadingScreen() {
 
