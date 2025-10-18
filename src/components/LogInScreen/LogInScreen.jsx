@@ -5,10 +5,11 @@ import './LogInScreen.css';
 import { supabase } from '../../utils/supabaseClient';
 
 export default function LogInScreen( { onLoginSuccess, onHome }) {
-  const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup' | 'forgotPassword' | 'resetPassword'
+  const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup' | 'forgotPassword' | 'resetPassword' | 'verifyOTP'
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -66,6 +67,17 @@ export default function LogInScreen( { onLoginSuccess, onHome }) {
         console.log('Password updated successfully');
         setSuccess('Password updated successfully!');
         setTimeout(() => changeAuthMode('login'), 2000);
+      } else if (authMode === 'verifyOTP') {
+        console.log('Attempting OTP verification for email:', email);
+        const { data, error: verifyError } = await supabase.auth.verifyOtp({
+          email,
+          token: otp,
+          type: 'signup'
+        });
+        if (verifyError) throw verifyError;
+        console.log('OTP verified successfully, auto-login');
+        setSuccess('Email verified successfully!');
+        if (onLoginSuccess) onLoginSuccess();
       } else if (authMode === 'signup') {
         console.log('Attempting signup for email:', email, 'with name:', name);
         const { error: signUpError } = await supabase.auth.signUp({
@@ -75,13 +87,8 @@ export default function LogInScreen( { onLoginSuccess, onHome }) {
         });
         if (signUpError) throw signUpError;
         console.log('Signup successful');
-        
-        // Automatically sign in after successful signup
-        console.log('Auto-login after signup for email:', email);
-        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-        if (signInError) throw signInError;
-        console.log('Auto-login successful');
-        if (onLoginSuccess) onLoginSuccess();
+        setSuccess('Signup successful! Please check your email to confirm your account or enter the OTP below.');
+        changeAuthMode('verifyOTP');
       } else { // login
         console.log('Attempting login for email:', email);
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
@@ -96,8 +103,6 @@ export default function LogInScreen( { onLoginSuccess, onHome }) {
       console.log('handleAuth completed, busy state reset');
       setBusy(false);
     }
-
-
   };
 
   const inputClass = (forceError) =>
@@ -108,6 +113,8 @@ export default function LogInScreen( { onLoginSuccess, onHome }) {
       <h1 className="title">
         {authMode === 'resetPassword' 
           ? 'Reset Your Password' 
+          : authMode === 'verifyOTP'
+          ? 'Verify Your Email'
           : 'Welcome to NewsFlash Quiz'}
       </h1>
 
@@ -130,7 +137,19 @@ export default function LogInScreen( { onLoginSuccess, onHome }) {
           autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          disabled={busy || authMode === 'verifyOTP'}
+        />
+      )}
+
+      {authMode === 'verifyOTP' && (
+        <input
+          className={inputClass(!!error)}
+          type="text"
+          placeholder="Enter 6-digit OTP"
+          value={otp}
+          onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
           disabled={busy}
+          maxLength={6}
         />
       )}
 
@@ -176,7 +195,7 @@ export default function LogInScreen( { onLoginSuccess, onHome }) {
         </>
       )}
 
-      {authMode !== 'forgotPassword' && authMode !== 'resetPassword' && (
+      {authMode !== 'forgotPassword' && authMode !== 'resetPassword' && authMode !== 'verifyOTP' && (
         <div className="password-wrapper">
           <input
             className={inputClass(!!error)}
@@ -209,6 +228,8 @@ export default function LogInScreen( { onLoginSuccess, onHome }) {
               ? 'Sending...'
               : authMode === 'resetPassword'
               ? 'Updating...'
+              : authMode === 'verifyOTP'
+              ? 'Verifying...'
               : authMode === 'signup'
               ? 'Signing up...'
               : 'Logging in...'}
@@ -219,6 +240,8 @@ export default function LogInScreen( { onLoginSuccess, onHome }) {
               ? 'Send Reset Email'
               : authMode === 'resetPassword'
               ? 'Update Password'
+              : authMode === 'verifyOTP'
+              ? 'Verify OTP'
               : authMode === 'signup'
               ? 'Sign Up'
               : 'Log In'}
@@ -226,13 +249,13 @@ export default function LogInScreen( { onLoginSuccess, onHome }) {
         )}
       </button>
 
-      {authMode !== 'forgotPassword' && authMode !== 'resetPassword' && (
+      {authMode !== 'forgotPassword' && authMode !== 'resetPassword' && authMode !== 'verifyOTP' && (
         <button className="event-btn" onClick={onHome} disabled={busy}>
             Home
         </button>
       )}
 
-      {authMode !== 'forgotPassword' && authMode !== 'resetPassword' && (
+      {authMode !== 'forgotPassword' && authMode !== 'resetPassword' && authMode !== 'verifyOTP' && (
         <button
           type="button"
           className="source-link source-link-text"
@@ -266,6 +289,17 @@ export default function LogInScreen( { onLoginSuccess, onHome }) {
           disabled={busy}
         >
           Back to login
+        </button>
+      )}
+
+      {authMode === 'verifyOTP' && (
+        <button
+          type="button"
+          className="source-link source-link-text"
+          onClick={() => changeAuthMode('signup')}
+          disabled={busy}
+        >
+          Back to sign up
         </button>
       )}
     </div>
