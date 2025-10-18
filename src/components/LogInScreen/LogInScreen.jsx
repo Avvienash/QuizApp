@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { FcGoogle } from 'react-icons/fc';
 import '../Components.css';
 import './LogInScreen.css';
 import { supabase } from '../../utils/supabaseClient';
@@ -25,18 +26,49 @@ export default function LogInScreen( { onLoginSuccess, onHome }) {
       if (event === 'PASSWORD_RECOVERY') {
         console.log('Password recovery event detected');
         setAuthMode('resetPassword');
+      } else if (event === 'SIGNED_IN' && session) {
+        console.log('User signed in via OAuth');
+        if (onLoginSuccess) onLoginSuccess();
       }
     });
 
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, []);
+  }, [onLoginSuccess]);
 
   const changeAuthMode = (mode) => {
     setAuthMode(mode);
     setError('');
     setSuccess('');
+  };
+
+  const handleGoogleSignIn = async () => {
+    console.log('Initiating Google Sign-In');
+    setError('');
+    setSuccess('');
+    setBusy(true);
+
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (signInError) throw signInError;
+      console.log('Google sign-in initiated successfully');
+      // Note: User will be redirected to Google's consent screen
+      // The onAuthStateChange listener will handle the successful sign-in
+    } catch (e) {
+      console.error('Google sign-in error:', e.message, e);
+      setError(e.message);
+      setBusy(false);
+    }
   };
 
   const handleAuth = async () => {
@@ -76,8 +108,10 @@ export default function LogInScreen( { onLoginSuccess, onHome }) {
         });
         if (verifyError) throw verifyError;
         console.log('OTP verified successfully, auto-login');
-        setSuccess('Email verified successfully!');
-        if (onLoginSuccess) onLoginSuccess();
+        setSuccess('Email verified successfully! Logging you in...');
+        setTimeout(() => {
+          if (onLoginSuccess) onLoginSuccess();
+        }, 1000);
       } else if (authMode === 'signup') {
         console.log('Attempting signup for email:', email, 'with name:', name);
         const { error: signUpError } = await supabase.auth.signUp({
@@ -248,6 +282,22 @@ export default function LogInScreen( { onLoginSuccess, onHome }) {
           </>
         )}
       </button>
+
+      {authMode !== 'forgotPassword' && authMode !== 'resetPassword' && authMode !== 'verifyOTP' && (
+        <button className="event-btn" onClick={handleGoogleSignIn} disabled={busy}>
+          {busy ? (
+            <span className="flex items-center justify-center gap-2">
+              <Loader2 className="animate-spin" size={30} strokeWidth={4} />
+              Connecting...
+            </span>
+          ) : (
+            <span className="flex items-center justify-center gap-2">
+              <FcGoogle size={30} />
+               Continue with Google
+            </span>
+          )}
+        </button>
+      )}
 
       {authMode !== 'forgotPassword' && authMode !== 'resetPassword' && authMode !== 'verifyOTP' && (
         <button className="event-btn" onClick={onHome} disabled={busy}>
