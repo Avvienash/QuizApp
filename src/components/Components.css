@@ -68,9 +68,78 @@
   box-shadow: 0 12px 30px rgba(31, 38, 135, 0.3);
 }
 
+.invisible {
+  visibility: hidden;
+}
 
+/* Shared Authentication Styles */
+.auth-input {
+  width: 100%;
+  max-width: 500px;
+  align-self: center;
+  padding: 0.8rem 1.5rem;
+  font-size: var(--fs-button);
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  font-weight: var(--font-weight-primary);
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.15);
+  color: var(--text-color-primary);
+  outline: none;
+}
 
+.auth-input:focus {
+  border-color: rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.25);
+}
 
+.auth-input:-webkit-autofill,
+.auth-input:-webkit-autofill:hover,
+.auth-input:-webkit-autofill:focus,
+.auth-input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--text-color-primary);
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.auth-error {
+  color: #ff6b6b;
+  font-size: var(--fs-option);
+  font-weight: var(--font-weight-primary);
+  text-align: center;
+}
+
+.auth-success {
+  color: #4BB543;
+  font-size: var(--fs-option);
+  font-weight: var(--font-weight-primary);
+  text-align: center;
+}
+
+.auth-input-error {
+  border-color: #ff6b6b !important;
+}
+
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+  align-self: center;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 15px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
 
 /* Mobile-specific tweaks */
 @media (max-width: 480px) {
@@ -79,10 +148,8 @@
     gap: 1rem;
   }
 
-
   .event-btn {
     padding: 0.7rem 1rem;
     border-radius: 15px;
   }
-  
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import './styles/Components.css';
-import './styles/DropdownMenu.css';
+import '../../Components.css';
+import './DropdownMenu.css';
 
 export default function DropdownMenu({ options, value, onChange }) {
   const [isOpen, setIsOpen] = useState(false);

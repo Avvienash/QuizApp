@@ -46,7 +46,7 @@
   top: calc(100% + 0.5rem);
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(150, 150, 150, 0.85); /* Darker, more opaque background */
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -87,13 +87,13 @@
 }
 
 .dropdown-option:hover {
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(150, 150, 150, 0.35); /* Slightly more opaque hover */
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
 
 .dropdown-option.selected {
-  background: rgba(79, 140, 255, 0.45);
+  background: rgba(79, 140, 255, 0.55); /* More opaque selected state */
   border-left: 3px solid rgba(79, 140, 255, 0.8);
 }
 
