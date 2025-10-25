@@ -1,50 +1,59 @@
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import '../../Components.css';
-import './OTPScreen.css';
+import { supabase } from '../../utils/supabaseClient';
+import '../Components.css';
+import './AuthScreen.css';
 
-export default function OTPScreen({ 
-  email,
-  onVerifyOTP, 
-  onBackToSignUp,
-  busy 
-}) {
+export default function VerifyOTPForm({ onChangeMode, onLoginSuccess, email: initialEmail, busy, setBusy }) {
+  const [email, setEmail] = useState(initialEmail || '');
   const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const handleSubmit = async () => {
+  const handleVerifyOTP = async () => {
     setError('');
     setSuccess('');
-    
-    if (!otp || otp.length !== 6) {
-      setError('Please enter a valid 6-digit OTP');
-      return;
-    }
-    
+    setBusy(true);
+
     try {
-      await onVerifyOTP(email, otp);
+      console.log('Attempting OTP verification for email:', email);
+      const { data, error: verifyError } = await supabase.auth.verifyOtp({
+        email,
+        token: otp,
+        type: 'signup'
+      });
+      if (verifyError) throw verifyError;
+      console.log('OTP verified successfully, auto-login');
       setSuccess('Email verified successfully! Logging you in...');
+      setTimeout(() => {
+        if (onLoginSuccess) onLoginSuccess();
+      }, 1000);
     } catch (e) {
+      console.error('OTP verification error:', e.message, e);
       setError(e.message);
+    } finally {
+      setBusy(false);
     }
   };
+
+  const inputClass = (forceError) => `auth-input${forceError ? ' auth-input-error' : ''}`;
 
   return (
     <div className="glass-screen">
       <h1 className="title">Verify Your Email</h1>
 
       <input
-        className="auth-input"
+        className={inputClass(!!error)}
         type="email"
         placeholder="Email"
         autoComplete="email"
         value={email}
-        disabled
+        onChange={(e) => setEmail(e.target.value)}
+        disabled={busy || !!initialEmail}
       />
 
       <input
-        className={`auth-input${error ? ' auth-input-error' : ''}`}
+        className={inputClass(!!error)}
         type="text"
         placeholder="Enter 6-digit OTP"
         value={otp}
@@ -55,9 +64,9 @@ export default function OTPScreen({
 
       {error && <div className="auth-error">{error}</div>}
       {success && <div className="auth-success">{success}</div>}
-      {!error && !success && <div className="auth-error invisible">placeholder</div>}
+      {(!error && !success) && <div className="auth-error invisible">placeholder</div>}
 
-      <button className="event-btn" onClick={handleSubmit} disabled={busy}>
+      <button className="event-btn" onClick={handleVerifyOTP} disabled={busy}>
         {busy ? (
           <span className="flex items-center justify-center gap-2">
             <Loader2 className="animate-spin" size={30} strokeWidth={4} />
@@ -71,7 +80,7 @@ export default function OTPScreen({
       <button
         type="button"
         className="source-link source-link-text"
-        onClick={onBackToSignUp}
+        onClick={() => onChangeMode('signup')}
         disabled={busy}
       >
         Back to sign up

@@ -18,7 +18,7 @@ const disable_cache = false;
 function App() {
   // State management
   const [questions, setQuestions] = useState([]);
-  const [screen, setScreen] = useState('start'); // 'start' | 'quiz' | 'result' | 'auth' | 'updateProfile'
+  const [screen, setScreen] = useState('start'); // 'start' | 'quiz' | 'result' | 'login' | 'updateProfile'
   const [score, setScore] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [questionsLoaded, setQuestionsLoaded] = useState(false);
@@ -26,21 +26,39 @@ function App() {
   const [category, setCategory] = useState('world');
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [authMode, setAuthMode] = useState('login'); 
 
   // Check for existing session on mount
   useEffect(() => {
+    let isMounted = true;
+
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return;
       setSession(session);
       setLoading(false);
     });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isMounted) return;
       setSession(session);
+
+      if (event === 'PASSWORD_RECOVERY') {
+        setAuthMode('resetPassword');
+        setScreen('login');
+      }
+
+      if (event === 'SIGNED_IN' && session) {
+        setAuthMode('login');
+        setScreen('start');
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Helper: freshness check (24h)
@@ -118,9 +136,10 @@ function App() {
     setScreen('start');
   };
 
-  // Handle authentication
-  const handleAuth = () => {
-    setScreen('auth');
+  // Handle login
+  const handleLogin = () => {
+    setAuthMode('login');
+    setScreen('login');
   };
 
   // Handle logout
@@ -129,16 +148,13 @@ function App() {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       setSession(null);
+      setAuthMode('login');
     } catch (error) {
       console.error('Error signing out:', error);
     }
   };
 
-  // Handle successful authentication
-  const handleAuthSuccess = () => {
-    setScreen('start');
-  };
-
+ 
   // change category
   const changeCategory = (newCategory) => {
     console.log("Changing category to:", newCategory);
@@ -150,33 +166,9 @@ function App() {
     }
   };
 
-  const handleUpdateProfile = () => {
-    setScreen('updateProfile');
-  };
-
-  const handleBackToHome = () => {
-    setScreen('start');
-  };
-
-  // Show loading while checking session
-  if (loading) {
-    return (
-      <div className="relative flex flex-col items-center justify-center min-h-screen text-white">
-        <video
-          className="fixed inset-0 w-screen h-screen object-cover -z-10"
-          autoPlay
-          loop
-          muted
-          playsInline
-          poster={backgroundPoster}
-          preload="metadata"
-        >
-          <source src={backgroundVideo} type="video/mp4" />
-        </video>
-        <LoadingScreen />
-      </div>
-    );
-  }
+  const handleLoginSuccess = () => { setScreen('start'); };
+  const handleUpdateProfile = () => {setScreen('updateProfile');};
+  const handleBackToHome = () => {setScreen('start');};
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen text-white">
@@ -207,11 +199,11 @@ function App() {
       
       {screen === 'error' && <ErrorScreen onRetry={handleStart} />}
       {screen === 'loading' && <LoadingScreen />}
-      {screen === 'auth' && <AuthScreen onAuthSuccess={handleAuthSuccess} onHome={handleHome} />}
+      {screen === 'login' && <AuthScreen authMode={authMode} onChangeMode={setAuthMode} onLoginSuccess={handleLoginSuccess} onHome={handleHome}/>}
       {screen === 'quiz' && <QuizScreen questions={questions} onQuizEnd={handleQuizEnd} />}
       {screen === 'result' && <ResultScreen score={score} total={questions.length} onHome={handleHome} onReview={() => setScreen('review')} />}
       {screen === 'review' && <QuizReviewScreen questions={questions} userAnswers={answers} onReturnToResults={() => setScreen('result')} />}
-      {screen === 'start' && <StartScreen onStart={handleStart} onCategoryChange={changeCategory} selectedCategory={category} isLoggedIn={!!session} onLogIn={handleAuth} onLogOut={handleLogout} onUpdateProfile={handleUpdateProfile} session={session} />}
+      {screen === 'start' && <StartScreen onStart={handleStart} onCategoryChange={changeCategory} selectedCategory={category}isLoggedIn={!!session}onLogIn={handleLogin}onLogOut={handleLogout}onUpdateProfile={handleUpdateProfile}session={session} />}
       {screen === 'updateProfile' && <UpdateProfileScreen onBack={handleBackToHome} session={session} />}
     </div>
   );

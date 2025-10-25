@@ -1,41 +1,76 @@
 import { useState } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { FcGoogle } from 'react-icons/fc';
-import '../../Components.css';
-import './LogInScreen.css';
+import { supabase } from '../../utils/supabaseClient';
+import '../Components.css';
+import './AuthScreen.css';
 
-export default function LogInScreen({ 
-  onLogin, 
-  onGoogleSignIn, 
-  onSwitchToSignUp, 
-  onForgotPassword,
-  onHome,
-  busy 
-}) {
+export default function LoginForm({ onChangeMode, onLoginSuccess, onHome, busy, setBusy }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [isLoginLoading, setIsLoginLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  const handleSubmit = async () => {
+  const handleLogin = async () => {
     setError('');
-    if (!email || !password) {
-      setError('Please fill in all fields');
-      return;
-    }
+    setSuccess('');
+    setIsLoginLoading(true);
+    setBusy(true);
+
     try {
-      await onLogin(email, password);
+      console.log('Attempting login for email:', email);
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError) throw signInError;
+      console.log('Login successful');
+      if (onLoginSuccess) onLoginSuccess();
     } catch (e) {
+      console.error('Login error:', e.message, e);
       setError(e.message);
+    } finally {
+      setIsLoginLoading(false);
+      setBusy(false);
     }
   };
+
+  const handleGoogleSignIn = async () => {
+    console.log('Initiating Google Sign-In');
+    setError('');
+    setSuccess('');
+    setIsGoogleLoading(true);
+    setBusy(true);
+
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (signInError) throw signInError;
+      console.log('Google sign-in initiated successfully');
+    } catch (e) {
+      console.error('Google sign-in error:', e.message, e);
+      setError(e.message);
+      setIsGoogleLoading(false);
+      setBusy(false);
+    }
+  };
+
+  const inputClass = (forceError) => `auth-input${forceError ? ' auth-input-error' : ''}`;
 
   return (
     <div className="glass-screen">
       <h1 className="title">Welcome to NewsFlash Quiz</h1>
 
       <input
-        className={`auth-input${error ? ' auth-input-error' : ''}`}
+        className={inputClass(!!error)}
         type="email"
         placeholder="Email"
         autoComplete="email"
@@ -46,7 +81,7 @@ export default function LogInScreen({
 
       <div className="password-wrapper">
         <input
-          className={`auth-input${error ? ' auth-input-error' : ''}`}
+          className={inputClass(!!error)}
           type={showPassword ? 'text' : 'password'}
           placeholder="Password"
           autoComplete="current-password"
@@ -64,10 +99,11 @@ export default function LogInScreen({
       </div>
 
       {error && <div className="auth-error">{error}</div>}
-      {!error && <div className="auth-error invisible">placeholder</div>}
+      {success && <div className="auth-success">{success}</div>}
+      {(!error && !success) && <div className="auth-error invisible">placeholder</div>}
 
-      <button className="event-btn" onClick={handleSubmit} disabled={busy}>
-        {busy ? (
+      <button className="event-btn" onClick={handleLogin} disabled={busy}>
+        {isLoginLoading ? (
           <span className="flex items-center justify-center gap-2">
             <Loader2 className="animate-spin" size={30} strokeWidth={4} />
             Logging in...
@@ -77,8 +113,8 @@ export default function LogInScreen({
         )}
       </button>
 
-      <button className="event-btn" onClick={onGoogleSignIn} disabled={busy}>
-        {busy ? (
+      <button className="event-btn" onClick={handleGoogleSignIn} disabled={busy}>
+        {isGoogleLoading ? (
           <span className="flex items-center justify-center gap-2">
             <Loader2 className="animate-spin" size={30} strokeWidth={4} />
             Connecting...
@@ -98,7 +134,7 @@ export default function LogInScreen({
       <button
         type="button"
         className="source-link source-link-text"
-        onClick={onSwitchToSignUp}
+        onClick={() => onChangeMode('signup')}
         disabled={busy}
       >
         Don't have an account? Sign Up
@@ -107,7 +143,7 @@ export default function LogInScreen({
       <button
         type="button"
         className="source-link source-link-text"
-        onClick={onForgotPassword}
+        onClick={() => onChangeMode('forgotPassword')}
         disabled={busy}
       >
         Forgot your password?
