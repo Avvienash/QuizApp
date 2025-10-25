@@ -17,27 +17,28 @@ export default function AuthScreen({ onAuthSuccess, onHome }) {
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event);
-      
+
       if (event === 'PASSWORD_RECOVERY') {
         console.log('Password recovery event detected');
         setIsResettingPassword(true);
         setAuthMode('resetPassword');
       } else if (event === 'SIGNED_IN' && session) {
         console.log('User signed in');
-        // Only trigger onAuthSuccess if we're not in password recovery mode
-        if (!isResettingPassword) {
-          console.log('Completing sign in via OAuth');
-          if (onAuthSuccess) onAuthSuccess();
-        } else {
+        if (isResettingPassword) {
           console.log('Signed in for password recovery, staying on reset screen');
+          // Keep user on reset password screen, don't call onAuthSuccess
+        } else {
+          console.log('Completing normal sign in');
+          if (onAuthSuccess) onAuthSuccess();
         }
       }
     });
 
     return () => {
-      authListener.subscription.unsubscribe();
+      authListener?.subscription?.unsubscribe?.();
     };
   }, [onAuthSuccess, isResettingPassword]);
+
 
   const handleLogin = async (email, password) => {
     console.log('Attempting login for email:', email);
