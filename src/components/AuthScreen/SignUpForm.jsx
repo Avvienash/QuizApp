@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
-import { supabase } from '../../utils/supabaseClient';
 import '../Components.css';
 import './AuthScreen.css';
+import { supabase } from '../../utils/supabaseClient';
 
 export default function SignUpForm({ onChangeMode, onHome, busy, setBusy }) {
   const [name, setName] = useState('');

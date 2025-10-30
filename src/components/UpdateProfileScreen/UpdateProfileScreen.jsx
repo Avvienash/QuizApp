@@ -3,7 +3,7 @@ import ViewProfileScreen from './ViewProfileScreen/ViewProfileScreen';
 import ChangeNameScreen from './ChangeNameScreen/ChangeNameScreen';
 import ChangePasswordScreen from './ChangePasswordScreen/ChangePasswordScreen';
 
-export default function UpdateProfileScreen({ onBack, session }) {
+export default function UpdateProfileScreen({ onBack, session, userName, setUserName }) {
   const [profileScreen, setProfileScreen] = useState('view'); // 'view' | 'changeName' | 'changePassword'
 
   const handleChangeName = () => {
@@ -26,6 +26,7 @@ export default function UpdateProfileScreen({ onBack, session }) {
           onChangeName={handleChangeName}
           onChangePassword={handleChangePassword}
           onBack={onBack}
+          userName={userName}
         />
       )}
 
@@ -33,6 +34,8 @@ export default function UpdateProfileScreen({ onBack, session }) {
         <ChangeNameScreen
           session={session}
           onBack={handleBackToProfile}
+          userName={userName}
+          setUserName={setUserName}
         />
       )}
 

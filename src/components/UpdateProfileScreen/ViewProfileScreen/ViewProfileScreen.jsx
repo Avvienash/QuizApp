@@ -1,8 +1,9 @@
 import '../../Components.css';
 import './ViewProfileScreen.css';
+import { getUserData } from '../../../utils/supabaseClient';
+import { useEffect, useState } from 'react';
 
-export default function ViewProfileScreen({ session, onChangeName, onChangePassword, onBack }) {
-  const displayName = session?.user?.user_metadata?.name || 'User';
+export default function ViewProfileScreen({ session, onChangeName, onChangePassword, onBack, userName }) {
   const displayEmail = session?.user?.email || '';
 
   return (
@@ -12,7 +13,7 @@ export default function ViewProfileScreen({ session, onChangeName, onChangePassw
       <div className="profile-info">
         <div className="profile-field">
           <span className="profile-label">Name:</span>
-          <span className="profile-value">{displayName}</span>
+          <span className="profile-value">{userName}</span>
         </div>
         <div className="profile-field">
           <span className="profile-label">Email:</span>

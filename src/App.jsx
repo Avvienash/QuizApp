@@ -11,7 +11,7 @@ import backgroundVideo from './assets/bg.mp4';
 import backgroundPoster from './assets/bg.jpg';
 import winnerVideo from './assets/winner.mp4';
 import { loadFromCache, saveToCache } from './utils/cache';
-import { supabase } from './utils/supabaseClient';
+import { supabase, createUser, checkUserExists, getUserData} from './utils/supabaseClient';
 
 const disable_cache = false;
 
@@ -25,8 +25,8 @@ function App() {
   const [showWinnerVideo, setShowWinnerVideo] = useState(false);
   const [category, setCategory] = useState('world');
   const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [authMode, setAuthMode] = useState('login'); 
+  const [userName, setUserName] = useState('');
 
   // Check for existing session on mount
   useEffect(() => {
@@ -35,7 +35,6 @@ function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!isMounted) return;
       setSession(session);
-      setLoading(false);
     });
 
     const {
@@ -50,8 +49,39 @@ function App() {
       }
 
       if (event === 'SIGNED_IN' && session) {
-        setAuthMode('login');
-        setScreen('start');
+
+        const uid = session.user.id;
+
+        checkUserExists(uid).then(async ({ exists, error }) => {
+          if (error) {
+            console.error('Error checking user existence:', error);
+            return;
+          }
+
+          if (!exists) {
+            const name = session.user.user_metadata?.name || session.user.email || '';
+            const { error: createError } = await createUser(uid, name);
+            if (createError) {
+              console.error('Error creating user:', createError);
+            } else {
+              setUserName(name);
+              console.log('User created successfully with name:', name);
+            }
+          }
+
+          setAuthMode('login');
+          setScreen('start');
+        });
+      }
+      else if (session) {
+        const uid = session.user.id;
+        getUserData(uid, 'name').then(({ data, error }) => {
+          if (error) {
+            console.error('Error fetching user data:', error);
+            return;
+          }
+          setUserName(data.name || '');
+        });
       }
     });
 
@@ -203,8 +233,8 @@ function App() {
       {screen === 'quiz' && <QuizScreen questions={questions} onQuizEnd={handleQuizEnd} />}
       {screen === 'result' && <ResultScreen score={score} total={questions.length} onHome={handleHome} onReview={() => setScreen('review')} />}
       {screen === 'review' && <QuizReviewScreen questions={questions} userAnswers={answers} onReturnToResults={() => setScreen('result')} />}
-      {screen === 'start' && <StartScreen onStart={handleStart} onCategoryChange={changeCategory} selectedCategory={category}isLoggedIn={!!session}onLogIn={handleLogin}onLogOut={handleLogout}onUpdateProfile={handleUpdateProfile}session={session} />}
-      {screen === 'updateProfile' && <UpdateProfileScreen onBack={handleBackToHome} session={session} />}
+      {screen === 'start' && <StartScreen onStart={handleStart} onCategoryChange={changeCategory} selectedCategory={category}isLoggedIn={!!session}onLogIn={handleLogin}onLogOut={handleLogout}onUpdateProfile={handleUpdateProfile} userName={userName} />}
+      {screen === 'updateProfile' && <UpdateProfileScreen onBack={handleBackToHome} session={session} userName={userName} setUserName={setUserName} />}
     </div>
   );
 }

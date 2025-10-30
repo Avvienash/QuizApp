@@ -1,14 +1,14 @@
+import { useEffect, useState } from 'react';
 import '../Components.css';
 import './StartScreen.css';
 import { categories } from '../../utils/categories';
 import DropdownMenu from './DropdownMenu/DropdownMenu';
 import SettingsMenu from './SettingsMenu/SettingsMenu';
 
-export default function StartScreen({ onStart, onCategoryChange, selectedCategory, isLoggedIn, onLogIn, onLogOut, onUpdateProfile, session }) {
-  
-  // Get Name from session if available
-  const displayName = session?.user?.user_metadata?.name;
-  const displayMessage = displayName ? `Welcome to NewsFlash Quiz, ${displayName}!` : 'Welcome to NewsFlash Quiz!';
+
+export default function StartScreen({ onStart, onCategoryChange, selectedCategory, isLoggedIn, onLogIn, onLogOut, onUpdateProfile, userName }) {
+
+  const displayMessage = isLoggedIn ? `Welcome to NewsFlash Quiz, ${userName}!` : 'Welcome to NewsFlash Quiz!';
   
   return (
     <div className="glass-screen" style={{ position: 'relative' }}>
@@ -16,7 +16,7 @@ export default function StartScreen({ onStart, onCategoryChange, selectedCategor
         isLoggedIn={isLoggedIn}
         onUpdateProfile={onUpdateProfile}
         onLogIn={onLogIn}
-        onLogOut={onLogOut}
+        onLogOut={() => {onLogOut();}}
       />
       
       <h1 className="title"> {displayMessage} </h1>

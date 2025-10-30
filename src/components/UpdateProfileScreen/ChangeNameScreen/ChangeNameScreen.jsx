@@ -2,13 +2,16 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import "../../Components.css";
 import "./ChangeNameScreen.css";
-import { supabase } from "../../../utils/supabaseClient";
+import { editUserData, getUserData } from "../../../utils/supabaseClient";
+import { useEffect } from "react";
 
-export default function ChangeNameScreen({ session, onBack }) {
-  const [name, setName] = useState(session?.user?.user_metadata?.name || '');
+export default function ChangeNameScreen({ session, onBack, userName, setUserName }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [displayName, setDisplayName] = useState(userName || '');
+
+
 
   const handleUpdate = async () => {
     setError('');
@@ -16,13 +19,14 @@ export default function ChangeNameScreen({ session, onBack }) {
     setBusy(true);
 
     try {
-      if (!name.trim()) {
+      if (!displayName.trim()) {
         throw new Error('Name cannot be empty');
       }
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: { name: name.trim() }
-      });
+      
+      const { error: updateError } = await editUserData(session.user.id, 'name', displayName.trim());
+      
       if (updateError) throw updateError;
+      setUserName(displayName.trim());
       setSuccess('Name updated successfully!');
     } catch (e) {
       setError(e.message);
@@ -42,8 +46,8 @@ export default function ChangeNameScreen({ session, onBack }) {
         className={inputClass(!!error)}
         type="text"
         placeholder="Enter your name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
+        value={displayName}
+        onChange={(e) => setDisplayName(e.target.value)}
         disabled={busy}
       />
 
